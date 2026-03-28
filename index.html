@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0A2463"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Nucleon"/>
+<title>Nucleon — Smart Learning</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --pri:#0A2463;--acc:#E84855;--accL:#FEE9EA;
+  --gold:#F4A261;--goldL:#FFF4E8;
+  --teal:#06D6A0;--tealL:#E6FBF5;
+  --bg:#F0F2F8;--surf:#fff;
+  --txt:#1A1D2E;--muted:#6B7280;
+  --bdr:#E5E7EB;
+  --ok:#10B981;--okL:#D1FAE5;
+  --err:#EF4444;--errL:#FEE2E2;
+  --warn:#F59E0B;--warnL:#FEF3C7;
+}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt)}
+.page{display:none;min-height:100vh;flex-direction:column}
+.page.show{display:flex}
+.topbar{background:var(--pri);height:54px;display:flex;align-items:center;padding:0 14px;gap:10px;position:sticky;top:0;z-index:50;flex-shrink:0}
+.topbar-title{color:#fff;font-weight:800;font-size:15px;flex:1}
+.body{flex:1;overflow-y:auto;padding:14px;padding-bottom:80px}
+.card{background:#fff;border-radius:14px;border:1px solid var(--bdr);padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:9px 16px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:transform .15s}
+.btn:active{transform:scale(.96)}
+.btn-pri{background:var(--pri);color:#fff}
+.btn-acc{background:var(--acc);color:#fff}
+.btn-out{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px}
+.btn-full{width:100%}
+.btn-ghost{background:rgba(255,255,255,.14);color:#fff;border:none}
+.inp{width:100%;padding:10px 13px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;outline:none;color:var(--txt);background:#fff;font-family:inherit}
+.inp:focus{border-color:var(--pri)}
+select.inp{cursor:pointer}
+textarea.inp{resize:vertical;min-height:80px;line-height:1.6}
+.label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.pills{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+.pills::-webkit-scrollbar{display:none}
+.pill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--bdr);background:#fff;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.pill.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.stat{border-radius:11px;padding:13px 14px}
+.divider{height:1px;background:var(--bdr);margin:12px 0}
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty-icon{font-size:38px;margin-bottom:10px}
+/* bottom nav */
+.bnav{background:#fff;border-top:1px solid var(--bdr);display:flex;position:sticky;bottom:0;z-index:50;flex-shrink:0}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 4px;cursor:pointer;gap:2px}
+.bni-ic{font-size:19px}
+.bni-lb{font-size:10px;font-weight:700;color:var(--muted)}
+.bni.on .bni-lb{color:var(--pri)}
+/* modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:32px}
+.modal-handle{width:36px;height:4px;background:var(--bdr);border-radius:2px;margin:12px auto 16px}
+.modal-hd{padding:0 18px 14px;border-bottom:1px solid var(--bdr);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-bd{padding:0 18px}
+/* option card for test */
+.opt{padding:12px 14px;border-radius:9px;border:2px solid var(--bdr);margin-bottom:8px;cursor:pointer;transition:all .15s;font-size:14px}
+.opt.sel{border-color:var(--acc);background:var(--accL);color:var(--acc);font-weight:700}
+/* q palette */
+.qpal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+.qd{height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;background:var(--bdr);color:var(--muted)}
+.qd.ans{background:var(--teal);color:#fff}
+.qd.cur{background:var(--pri);color:#fff}
+/* timer */
+.timer{font-family:monospace;font-size:18px;font-weight:800;padding:6px 14px;border-radius:8px;background:var(--teal);color:var(--pri)}
+.timer.w{background:var(--warn);color:#fff}
+.timer.d{background:var(--err);color:#fff}
+/* loader */
+#loader{position:fixed;inset:0;background:var(--pri);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .4s}
+#loader.hide{opacity:0;pointer-events:none}
+.spin{animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* class card on student home */
+.cls-card{border-radius:14px;padding:22px 18px;cursor:pointer;border:2px solid transparent;transition:all .18s;text-align:center}
+.cls-card:active{transform:scale(.96)}
+/* image preview */
+.img-preview{width:100%;border-radius:8px;margin-top:8px;max-height:200px;object-fit:contain}
+/* fade */
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fade .22s ease}
+/* video player */
+.vp-wrap{position:relative;width:100%;background:#000}
+.vp-wrap video{width:100%;display:block;max-height:56vw;background:#000}
+.vp-controls{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(0,0,0,.85)}
+.vp-play{width:34px;height:34px;border-radius:50%;background:var(--acc);border:none;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vp-progress{flex:1;height:4px;background:rgba(255,255,255,.2);border-radius:2px;cursor:pointer;position:relative}
+.vp-bar{height:100%;background:var(--acc);border-radius:2px;width:0%;transition:width .1s}
+.vp-time{font-size:10px;color:rgba(255,255,255,.6);font-family:monospace;white-space:nowrap}
+.vp-vol{width:50px;accent-color:var(--acc)}
+.vp-fs{background:none;border:none;color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;padding:4px}
+.vp-speed{background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:4px;font-size:10px;padding:3px 5px;cursor:pointer;font-family:inherit}
+.vp-tab-bar{display:flex;border-bottom:1px solid rgba(255,255,255,.1)}
+.vp-tab{flex:1;padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2px solid transparent}
+.vp-tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* ============ PREMIUM DARK STUDENT THEME ============ */
+:root{
+  --dark-bg:#070D20;
+  --dark-surf:rgba(255,255,255,.05);
+  --dark-border:rgba(255,255,255,.09);
+  --dark-text:#fff;
+  --dark-muted:rgba(255,255,255,.45);
+  --glow-red:rgba(232,72,85,.35);
+  --glow-blue:rgba(10,36,99,.6);
+  --glow-teal:rgba(6,214,160,.35);
+}
+/* Premium page bg */
+#pg-student,#pg-classview{background:linear-gradient(150deg,#070d20 0%,#0c1535 55%,#080e24 100%)!important}
+/* Premium topbar for student pages */
+#pg-student .topbar,#pg-classview .topbar{
+  background:rgba(7,13,32,.88)!important;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,.07)!important;
+  height:60px!important;
+}
+#pg-student .topbar-title,#pg-classview .topbar-title{
+  font-size:16px!important;letter-spacing:.03em;
+  background:linear-gradient(90deg,#fff,rgba(255,255,255,.7));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+/* Premium bottom nav */
+#pg-classview .bnav{
+  background:rgba(7,13,32,.92)!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  padding:4px 0 6px!important;
+  box-shadow:0 -4px 24px rgba(0,0,0,.4)!important;
+}
+#pg-classview .bnav .bni-lb{color:rgba(255,255,255,.3)!important;font-size:10px!important}
+#pg-classview .bnav .bni.on .bni-lb{color:var(--teal)!important}
+#pg-classview .bnav .bni.on .bni-ic{filter:none}
+/* Premium class card */
+.pcls-card{
+  border-radius:22px;overflow:hidden;cursor:pointer;position:relative;
+  margin-bottom:16px;transition:transform .2s,box-shadow .2s;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.pcls-card:active{transform:scale(.97)}
+.pcls-inner{padding:24px 22px 22px;position:relative;z-index:2}
+/* Premium stat chips */
+.pchip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:20px;
+  font-size:11px;font-weight:800;
+  background:rgba(255,255,255,.12);
+  color:rgba(255,255,255,.85);
+  backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.15);
+}
+/* Premium content card */
+.pcard{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;overflow:hidden;margin-bottom:12px;
+  transition:transform .15s,background .15s;
+  cursor:pointer;
+}
+.pcard:active{transform:scale(.98);background:rgba(255,255,255,.07)}
+/* Hero banner */
+.phero{
+  border-radius:20px;padding:20px 18px;margin-bottom:20px;
+  background:linear-gradient(135deg,rgba(232,72,85,.18) 0%,rgba(10,36,99,.4) 50%,rgba(6,214,160,.12) 100%);
+  border:1px solid rgba(255,255,255,.1);
+  position:relative;overflow:hidden;
+}
+.phero::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:130px;height:130px;border-radius:50%;
+  background:radial-gradient(circle,rgba(232,72,85,.25),transparent 70%);
+}
+.phero::after{
+  content:'';position:absolute;bottom:-20px;left:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(6,214,160,.2),transparent 70%);
+}
+/* Glowing badge */
+.gbadge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;
+  background:rgba(6,214,160,.15);color:var(--teal);
+  border:1px solid rgba(6,214,160,.3);
+  letter-spacing:.04em;
+}
+/* Premium empty state */
+.pempty{text-align:center;padding:50px 20px}
+.pempty-icon{font-size:44px;margin-bottom:12px;display:block}
+.pempty p{color:rgba(255,255,255,.3);font-size:13px}
+/* Scrollbar hide */
+#pg-student .body::-webkit-scrollbar,#pg-classview .body::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <svg class="spin" width="68" height="68" viewBox="0 0 40 40" fill="none">
+    <circle cx="20" cy="20" r="19" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+    <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none"/>
+    <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(60 20 20)"/>
+    <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(-60 20 20)"/>
+    <circle cx="20" cy="20" r="4" fill="#E84855"/>
+  </svg>
+  <div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:.1em;margin-top:14px">NUCLEON</div>
+  <div style="color:rgba(255,255,255,.4);font-size:12px;margin-top:5px">Smart Learning Platform</div>
+</div>
+
+<div id="app">
+
+<!-- LANDING -->
+<div id="pg-landing" class="page show" style="background:var(--pri)">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;width:280px;height:280px;border-radius:50%;border:1px solid rgba(255,255,255,.05);top:-50px;right:-50px"></div>
+    <svg width="70" height="70" viewBox="0 0 40 40" fill="none" style="margin-bottom:14px">
+      <circle cx="20" cy="20" r="19" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+      <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none"/>
+      <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(60 20 20)"/>
+      <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(-60 20 20)"/>
+      <circle cx="20" cy="20" r="4" fill="#E84855"/>
+    </svg>
+    <div style="color:rgba(255,255,255,.45);font-size:10px;font-weight:700;letter-spacing:.13em;margin-bottom:6px">SMART LEARNING PLATFORM</div>
+    <h1 style="font-size:38px;font-weight:800;color:#fff;letter-spacing:.06em;margin-bottom:6px">NUCLEON</h1>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;line-height:1.7;margin-bottom:36px;max-width:270px">Video Lectures, Notes Video Lectures, Notes &amp; AI Tests for Class 10, 11 &amp; 12amp; AI Tests for Class 10, 11 &amp; 12</p>
+    <button class="btn btn-acc btn-full" style="max-width:270px;padding:14px;font-size:15px;border-radius:12px" onclick="go('slogin')">🎓 Start Learning</button>
+    <button class="btn btn-ghost btn-full" style="max-width:270px;padding:14px;font-size:15px;border-radius:12px;margin-top:10px" onclick="go('tlogin')">👨‍🏫 Teacher Portal</button>
+    <div style="display:flex;gap:24px;margin-top:40px">
+      <div><div style="font-size:17px;font-weight:800;color:#F4A261" id="ls-v">0</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">Videos</div></div>
+      <div><div style="font-size:17px;font-weight:800;color:#F4A261" id="ls-n">0</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">Notes</div></div>
+      <div><div style="font-size:17px;font-weight:800;color:#F4A261" id="ls-t">0</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">Live Tests</div></div>
+      <div><div style="font-size:17px;font-weight:800;color:#F4A261" id="ls-s">0</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">Students</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER LOGIN -->
+<div id="pg-tlogin" class="page" style="background:var(--pri)">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#fff;border-radius:20px;padding:28px 22px;width:100%;max-width:330px;text-align:center">
+      <svg width="50" height="50" viewBox="0 0 40 40" fill="none" style="margin-bottom:12px">
+        <circle cx="20" cy="20" r="19" fill="#0A2463"/>
+        <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none"/>
+        <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(60 20 20)"/>
+        <ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(-60 20 20)"/>
+        <circle cx="20" cy="20" r="4" fill="#E84855"/>
+      </svg>
+      <div style="font-size:19px;font-weight:800;margin-bottom:4px">Teacher Login</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:22px">Enter password to access dashboard</div>
+      <input id="tpass" type="password" class="inp" placeholder="Password" style="text-align:center;letter-spacing:4px;font-size:17px;margin-bottom:8px" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div id="lerr" style="color:var(--err);font-size:12px;margin-bottom:8px;display:none">Incorrect password. Default password: nucleon123</div>
+      <button class="btn btn-pri btn-full" style="margin-bottom:8px" onclick="doLogin()">Login →</button>
+      <button class="btn btn-out btn-full" onclick="go('landing')">← Back</button>
+      <div style="color:var(--muted);font-size:11px;margin-top:12px">Default password: nucleon123</div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT LOGIN / REGISTER -->
+<div id="pg-slogin" class="page" style="background:var(--pri)">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+    <div style="background:#fff;border-radius:20px;padding:28px 22px;width:100%;max-width:330px">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:8px">🎓</div>
+        <div style="font-size:19px;font-weight:800;margin-bottom:4px">Student Login</div>
+        <div style="color:var(--muted);font-size:12px">Create an account or sign in to continue</div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:18px">
+        <button id="sl-tab-login" onclick="slTab('login')" style="flex:1;padding:9px;font-size:12px;font-weight:800;border:none;cursor:pointer;background:var(--pri);color:#fff">Login</button>
+        <button id="sl-tab-reg" onclick="slTab('reg')" style="flex:1;padding:9px;font-size:12px;font-weight:800;border:none;border-left:1.5px solid var(--bdr);cursor:pointer;background:#fff;color:var(--muted)">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="sl-login-form">
+        <div style="margin-bottom:10px"><label class="label">Roll No / Phone</label><input class="inp" id="sl-lid" placeholder="Enter your Roll No or Phone"/></div>
+        <div style="margin-bottom:10px"><label class="label">Class</label>
+          <select class="inp" id="sl-lcls">
+            <option value="">-- Select Class --</option>
+            <option>Class 10</option>
+            <option>Class 11</option>
+            <option>Class 12</option>
+          </select>
+        </div>
+        <div id="sl-lerr" style="color:var(--err);font-size:12px;margin-bottom:8px;display:none">Student not found. Please register first.</div>
+        <button class="btn btn-pri btn-full" style="margin-bottom:8px" onclick="doStudentLogin()">Login →</button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="sl-reg-form" style="display:none">
+        <div style="margin-bottom:10px"><label class="label">Full Name *</label><input class="inp" id="sl-rname" placeholder="Enter your full name"/></div>
+        <div style="margin-bottom:10px"><label class="label">Class *</label>
+          <select class="inp" id="sl-rcls">
+            <option value="">-- Select Class --</option>
+            <option>Class 10</option>
+            <option>Class 11</option>
+            <option>Class 12</option>
+          </select>
+        </div>
+        <div style="margin-bottom:10px"><label class="label">Roll No / Phone *</label><input class="inp" id="sl-rid" placeholder="Enter roll number or phone"/></div>
+        <div id="sl-rerr" style="color:var(--err);font-size:12px;margin-bottom:8px;display:none">This ID is already registered in this class.</div>
+        <button class="btn btn-acc btn-full" style="margin-bottom:8px" onclick="doStudentRegister()">Register & Start →</button>
+      </div>
+
+      <button class="btn btn-out btn-full" onclick="go('landing')" style="margin-top:4px">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER DASHBOARD -->
+<div id="pg-teacher" class="page">
+  <div class="topbar">
+    <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="19" fill="rgba(255,255,255,.15)"/><ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none"/><ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(60 20 20)"/><ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(-60 20 20)"/><circle cx="20" cy="20" r="4" fill="#E84855"/></svg>
+    <div class="topbar-title">NUCLEON — Teacher</div>
+    <button class="btn btn-ghost btn-sm" onclick="go('landing')">Logout</button>
+  </div>
+  <div class="body" id="t-body"></div>
+  <div class="bnav">
+    <div class="bni on" id="tbn-dash" onclick="tTab('dash',this)"><div class="bni-ic">📊</div><div class="bni-lb">Dashboard</div></div>
+    <div class="bni" id="tbn-videos" onclick="tTab('videos',this)"><div class="bni-ic">▶</div><div class="bni-lb">Videos</div></div>
+    <div class="bni" id="tbn-notes" onclick="tTab('notes',this)"><div class="bni-ic">📄</div><div class="bni-lb">Notes</div></div>
+    <div class="bni" id="tbn-tests" onclick="tTab('tests',this)"><div class="bni-ic">✏️</div><div class="bni-lb">Tests</div></div>
+    <div class="bni" id="tbn-students" onclick="tTab('students',this)"><div class="bni-ic">👥</div><div class="bni-lb">Students</div></div>
+    <div class="bni" id="tbn-results" onclick="tTab('results',this)"><div class="bni-ic">📈</div><div class="bni-lb">Results</div></div>
+  </div>
+</div>
+
+<!-- STUDENT HOME (class selector) -->
+<div id="pg-student" class="page">
+  <div class="topbar">
+    <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="19" fill="rgba(255,255,255,.15)"/><ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none"/><ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(60 20 20)"/><ellipse cx="20" cy="20" rx="16" ry="6.5" stroke="white" stroke-width="1.8" fill="none" transform="rotate(-60 20 20)"/><circle cx="20" cy="20" r="4" fill="#E84855"/></svg>
+    <div class="topbar-title" id="s-topbar-name">NUCLEON</div>
+    <button class="btn btn-ghost btn-sm" style="border:1px solid rgba(255,255,255,.2);font-size:11px" onclick="studentLogout()">Logout</button>
+  </div>
+  <div class="body" id="s-body"></div>
+</div>
+
+<!-- STUDENT CLASS VIEW (after selecting class) -->
+<div id="pg-classview" class="page">
+  <div class="topbar">
+    <button onclick="go('student')" style="background:rgba(255,255,255,.12);border:none;color:#fff;font-size:15px;cursor:pointer;padding:6px 10px;border-radius:8px;font-weight:700">← Back</button>
+    <div class="topbar-title" id="cv-title">Class 10</div>
+  </div>
+  <div class="body" id="cv-body"></div>
+  <div class="bnav">
+    <div class="bni on" id="sbn-vid" onclick="cvTab('videos',this)"><div class="bni-ic">▶</div><div class="bni-lb">Lectures</div></div>
+    <div class="bni" id="sbn-not" onclick="cvTab('notes',this)"><div class="bni-ic">📄</div><div class="bni-lb">Notes</div></div>
+    <div class="bni" id="sbn-tst" onclick="cvTab('tests',this)"><div class="bni-ic">✏️</div><div class="bni-lb">Tests</div></div>
+  </div>
+</div>
+
+<!-- WATCH VIDEO -->
+<div id="pg-watch" class="page" style="background:#090d18">
+  <div class="topbar" style="background:#090d18;border-bottom:1px solid rgba(255,255,255,.08)">
+    <button id="watch-back" style="background:none;border:none;color:#fff;font-size:19px;cursor:pointer;padding:0 6px 0 0">←</button>
+    <div class="topbar-title">Watch Lecture</div>
+  </div>
+  <div class="body" id="watch-body" style="padding:0;background:#090d18"></div>
+</div>
+
+<!-- READ NOTES -->
+<div id="pg-notes" class="page">
+  <div class="topbar">
+    <button id="notes-back" style="background:none;border:none;color:#fff;font-size:19px;cursor:pointer;padding:0 6px 0 0">←</button>
+    <div class="topbar-title" id="notes-title">Notes</div>
+  </div>
+  <div class="body" id="notes-body"></div>
+</div>
+
+<!-- TEST PAGE -->
+<div id="pg-test" class="page">
+  <div class="topbar">
+    <div class="topbar-title" id="test-title">Test</div>
+    <div class="timer" id="test-timer">--:--</div>
+    <button class="btn btn-acc btn-sm" onclick="submitTest(false)">Submit</button>
+  </div>
+  <div class="body" id="test-body"></div>
+</div>
+
+<!-- RESULT PAGE -->
+<div id="pg-result" class="page">
+  <div class="topbar"><div class="topbar-title">Your Result</div></div>
+  <div class="body" id="result-body"></div>
+</div>
+
+<!-- GOOGLE FORM TEST PAGE -->
+<div id="pg-gform" class="page" style="background:#090d18">
+  <div class="topbar" style="background:#090d18;border-bottom:1px solid rgba(255,255,255,.08)">
+    <button id="gform-back" style="background:none;border:none;color:#fff;font-size:19px;cursor:pointer;padding:0 6px 0 0">←</button>
+    <div class="topbar-title" id="gform-title">Form Test</div>
+    <div class="timer" id="gform-timer">--:--</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <iframe id="gform-iframe" style="flex:1;border:none;width:100%;background:#fff" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="overlay" class="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hd">
+      <div style="font-size:16px;font-weight:800" id="modal-title">Title</div>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">×</button>
+    </div>
+    <div class="modal-bd" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA & STORAGE
+// ============================================================
+const CLASSES = ['Class 10','Class 11','Class 12'];
+const SUBJECTS = ['Mathematics','Physics','Chemistry','Biology','English','History','Geography','Computer Science','Economics','Hindi'];
+const PASS = 'nucleon123';
+
+// Chemistry Chapters per class
+const CHEM_CHAPTERS = {
+  'Class 10': [
+    'Ch 1 - Chemical Reactions & Equations',
+    'Ch 2 - Acids, Bases & Salts',
+    'Ch 3 - Metals & Non-metals',
+    'Ch 4 - Carbon & Its Compounds',
+    'Ch 5 - Periodic Classification of Elements',
+  ],
+  'Class 11': [
+    'Ch 1 - Some Basic Concepts of Chemistry',
+    'Ch 2 - Structure of Atom',
+    'Ch 3 - Classification of Elements & Periodicity',
+    'Ch 4 - Chemical Bonding & Molecular Structure',
+    'Ch 5 - States of Matter',
+    'Ch 6 - Thermodynamics',
+    'Ch 7 - Equilibrium',
+    'Ch 8 - Redox Reactions',
+    'Ch 9 - Hydrogen',
+    'Ch 10 - The s-Block Elements',
+    'Ch 11 - The p-Block Elements',
+    'Ch 12 - Organic Chemistry: Basic Principles',
+    'Ch 13 - Hydrocarbons',
+    'Ch 14 - Environmental Chemistry',
+  ],
+  'Class 12': [
+    'Ch 1 - The Solid State',
+    'Ch 2 - Solutions',
+    'Ch 3 - Electrochemistry',
+    'Ch 4 - Chemical Kinetics',
+    'Ch 5 - Surface Chemistry',
+    'Ch 6 - General Principles of Isolation of Elements',
+    'Ch 7 - The p-Block Elements',
+    'Ch 8 - The d & f Block Elements',
+    'Ch 9 - Coordination Compounds',
+    'Ch 10 - Haloalkanes & Haloarenes',
+    'Ch 11 - Alcohols, Phenols & Ethers',
+    'Ch 12 - Aldehydes, Ketones & Carboxylic Acids',
+    'Ch 13 - Amines',
+    'Ch 14 - Biomolecules',
+    'Ch 15 - Polymers',
+    'Ch 16 - Chemistry in Everyday Life',
+  ]
+};
+
+// Track selected chapter filter per subject
+
+const CLS_COLORS = {'Class 10':['#E84855','#FEE9EA'],'Class 11':['#0A2463','#E8EDF8'],'Class 12':['#06D6A0','#E6FBF5']};
+
+let DB = {videos:[],notes:[],tests:[],results:[],students:[]};
+let selClass = 'Class 10';
+
+let currentTest = null, testAnswers = {}, timerInt = null, timeLeft = 0, qIdx = 0;
+let studentName = '';
+let currentStudent = null; // logged-in student object
+
+function saveDB(){ try{localStorage.setItem('nuc2_db',JSON.stringify(DB));}catch(e){} }
+function loadDB(){
+  try{
+    const d=localStorage.getItem('nuc2_db');
+    if(d){ DB=JSON.parse(d); if(!DB.students) DB.students=[]; }
+  }catch(e){}
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).substr(2,5); }
+function code6(){ return Math.random().toString(36).substr(2,6).toUpperCase(); }
+function ytId(url){ const m=url?.match(/(?:v=|youtu\.be\/)([^&\n?#]+)/); return m?m[1]:null; }
+function fmtTime(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function go(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+  document.getElementById('pg-'+pg).classList.add('show');
+  window.scrollTo(0,0);
+  if(pg==='landing') updateLandingStats();
+  if(pg==='student'){
+    const el=document.getElementById('s-topbar-name');
+    if(el) el.textContent=currentStudent?`Hi, ${currentStudent.name.split(' ')[0]}!`:'NUCLEON';
+    renderStudentHome();
+  }
+  if(pg==='teacher') renderTeacher('dash');
+  if(pg==='slogin'){
+    // Reset login form
+    setTimeout(()=>{ slTab('login'); },10);
+  }
+}
+
+function studentLogout(){
+  currentStudent=null; studentName='';
+  go('landing');
+}
+
+function updateLandingStats(){
+  document.getElementById('ls-v').textContent = DB.videos.length;
+  document.getElementById('ls-n').textContent = DB.notes.length;
+  document.getElementById('ls-t').textContent = DB.tests.filter(t=>t.active).length;
+  const el=document.getElementById('ls-s');
+  if(el) el.textContent=(DB.students||[]).length;
+}
+
+// ============================================================
+// TEACHER LOGIN
+// ============================================================
+function doLogin(){
+  const p=document.getElementById('tpass').value;
+  const e=document.getElementById('lerr');
+  if(p===PASS){e.style.display='none';document.getElementById('tpass').value='';go('teacher');}
+  else e.style.display='block';
+}
+
+// ============================================================
+// STUDENT LOGIN / REGISTER
+// ============================================================
+function slTab(tab){
+  const isLogin=tab==='login';
+  document.getElementById('sl-login-form').style.display=isLogin?'block':'none';
+  document.getElementById('sl-reg-form').style.display=isLogin?'none':'block';
+  document.getElementById('sl-tab-login').style.background=isLogin?'var(--pri)':'#fff';
+  document.getElementById('sl-tab-login').style.color=isLogin?'#fff':'var(--muted)';
+  document.getElementById('sl-tab-reg').style.background=isLogin?'#fff':'var(--pri)';
+  document.getElementById('sl-tab-reg').style.color=isLogin?'var(--muted)':'#fff';
+}
+
+function doStudentLogin(){
+  if(!DB.students) DB.students=[];
+  const id=document.getElementById('sl-lid').value.trim();
+  const cls=document.getElementById('sl-lcls').value;
+  const err=document.getElementById('sl-lerr');
+  if(!id||!cls){err.style.display='block';err.textContent='Please enter Roll No and select Class';return;}
+  const s=DB.students.find(x=>x.rollId===id&&x.cls===cls);
+  if(!s){err.style.display='block';err.textContent='Student not found. Please register first.';return;}
+  err.style.display='none';
+  currentStudent=s;
+  studentName=s.name;
+  // Update last login
+  s.lastLogin=new Date().toISOString();
+  s.loginCount=(s.loginCount||0)+1;
+  saveDB();
+  selClass=s.cls;
+  go('student');
+}
+
+function doStudentRegister(){
+  if(!DB.students) DB.students=[];
+  const name=document.getElementById('sl-rname').value.trim();
+  const cls=document.getElementById('sl-rcls').value;
+  const rid=document.getElementById('sl-rid').value.trim();
+  const err=document.getElementById('sl-rerr');
+  if(!name||!cls||!rid){err.style.display='block';err.textContent='All fields are required';return;}
+  const exists=DB.students.find(x=>x.rollId===rid&&x.cls===cls);
+  if(exists){err.style.display='block';err.textContent='This Roll No/Phone is already registered in this class';return;}
+  err.style.display='none';
+  const s={id:uid(),name,cls,rollId:rid,joinedAt:new Date().toISOString(),lastLogin:new Date().toISOString(),loginCount:1};
+  DB.students.push(s);
+  saveDB();
+  currentStudent=s;
+  studentName=s.name;
+  selClass=s.cls;
+  go('student');
+}
+
+// ============================================================
+// TEACHER - TABS
+// ============================================================
+let tCurrentTab='dash';
+function tTab(tab,el){
+  document.querySelectorAll('.bnav .bni').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderTeacher(tab);
+}
+
+function renderTeacher(tab){
+  tCurrentTab=tab;
+  const b=document.getElementById('t-body');
+  b.innerHTML = tab==='dash'?tDash():tab==='videos'?tVideos():tab==='notes'?tNotes():tab==='tests'?tTests():tab==='students'?tStudents():tResults();
+  b.classList.add('fade');
+}
+
+// TEACHER DASHBOARD - classwise stats
+function tDash(){
+  if(!DB.students) DB.students=[];
+  const registeredStudents=DB.students.length;
+  const avg=DB.results.length?Math.round(DB.results.reduce((a,r)=>a+r.pct,0)/DB.results.length):0;
+  const recent=[...DB.results].sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)).slice(0,6);
+  return `
+  <div class="card" style="background:var(--pri);margin-bottom:14px">
+    <div style="color:rgba(255,255,255,.45);font-size:10px;font-weight:700;letter-spacing:.06em;margin-bottom:3px">TEACHER DASHBOARD</div>
+    <div style="color:#fff;font-size:19px;font-weight:800">Welcome Back! 👋</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+    <div class="stat" style="background:var(--accL)"><div style="font-size:22px;font-weight:800;color:var(--acc)">${DB.videos.length}</div><div style="font-size:11px;color:var(--acc);font-weight:700;margin-top:2px">Total Videos</div></div>
+    <div class="stat" style="background:#E8EDF8"><div style="font-size:22px;font-weight:800;color:var(--pri)">${DB.notes.length}</div><div style="font-size:11px;color:var(--pri);font-weight:700;margin-top:2px">Total Notes</div></div>
+    <div class="stat" style="background:var(--tealL)"><div style="font-size:22px;font-weight:800;color:var(--teal)">${DB.tests.filter(t=>t.active).length}</div><div style="font-size:11px;color:var(--teal);font-weight:700;margin-top:2px">Live Tests</div></div>
+    <div class="stat" style="background:var(--goldL);cursor:pointer" onclick="tTab('students',document.getElementById('tbn-students'))"><div style="font-size:22px;font-weight:800;color:var(--gold)">${registeredStudents}</div><div style="font-size:11px;color:var(--gold);font-weight:700;margin-top:2px">👥 Students →</div></div>
+  </div>
+
+  <div style="font-size:14px;font-weight:800;margin-bottom:10px">Class-wise Overview</div>
+  ${CLASSES.map(cls=>{
+    const [col,bg]=CLS_COLORS[cls]||['#333','#eee'];
+    const vCount=DB.videos.filter(v=>v.cls===cls).length;
+    const nCount=DB.notes.filter(n=>n.cls===cls).length;
+    const tCount=DB.tests.filter(t=>t.cls===cls).length;
+    const sCount=DB.students.filter(s=>s.cls===cls).length;
+    return `<div class="card" style="margin-bottom:10px;border-left:3px solid ${col}">
+      <div style="font-size:14px;font-weight:800;color:${col};margin-bottom:8px">${cls}</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--muted)">👥 <b>${sCount}</b> Students</span>
+        <span style="font-size:12px;color:var(--muted)">▶ <b>${vCount}</b> Videos</span>
+        <span style="font-size:12px;color:var(--muted)">📄 <b>${nCount}</b> Notes</span>
+        <span style="font-size:12px;color:var(--muted)">✏️ <b>${tCount}</b> Tests</span>
+      </div>
+    </div>`;
+  }).join('')}
+
+  <div style="font-size:14px;font-weight:800;margin:16px 0 10px">Recent Results</div>
+  <div class="card" style="padding:8px 12px">
+    ${recent.length===0?'<div class="empty" style="padding:20px"><div class="empty-icon">📊</div><p>No results yet</p></div>':
+    recent.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid var(--bdr)">
+      <div><div style="font-size:13px;font-weight:700">${r.studentName}</div><div style="font-size:10px;color:var(--muted)">${r.testTitle} • ${r.cls||''}</div></div>
+      <span class="badge" style="background:${r.pct>=60?'var(--okL)':'var(--errL)'};color:${r.pct>=60?'var(--ok)':'var(--err)'}">${r.pct}%</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// TEACHER VIDEOS
+let _tvc='Class 10';
+let _tvSubjFilter='All';
+let _tvChapFilter='All';
+function tVideos(){
+  // Subject filter pills
+  const allSubjects=['All',...SUBJECTS];
+  // If Chemistry selected, show chapter pills
+  const chapList=_tvSubjFilter==='Chemistry'?['All',...(CHEM_CHAPTERS[_tvc]||[])]:[];
+  let list=DB.videos.filter(v=>v.cls===_tvc);
+  if(_tvSubjFilter!=='All') list=list.filter(v=>v.subj===_tvSubjFilter);
+  if(_tvSubjFilter==='Chemistry'&&_tvChapFilter!=='All') list=list.filter(v=>v.chapter===_tvChapFilter);
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:15px;font-weight:800">Video Library</div>
+    <button class="btn btn-pri btn-sm" onclick="openAddVideo()">+ Add Video</button>
+  </div>
+  <div class="pills" style="margin-bottom:10px">
+    ${CLASSES.map(c=>`<div class="pill${_tvc===c?' on':''}" onclick="_tvc='${c}';_tvSubjFilter='All';_tvChapFilter='All';renderTeacher('videos')">${c}</div>`).join('')}
+  </div>
+  <div class="pills" style="margin-bottom:${_tvSubjFilter==='Chemistry'?'0':'14'}px">
+    ${allSubjects.map(s=>`<div class="pill${_tvSubjFilter===s?' on':''}" style="font-size:11px" onclick="_tvSubjFilter='${s}';_tvChapFilter='All';renderTeacher('videos')">${s}</div>`).join('')}
+  </div>
+  ${_tvSubjFilter==='Chemistry'?`
+  <div style="margin-top:8px;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.07em;margin-bottom:6px">🧪 CHEMISTRY CHAPTERS</div>
+    <div class="pills">
+      ${chapList.map(ch=>`<div class="pill${_tvChapFilter===ch?' on':''}" style="font-size:11px;background:${_tvChapFilter===ch?'var(--acc)':'#fff'};border-color:${_tvChapFilter===ch?'var(--acc)':'var(--bdr)'}" onclick="_tvChapFilter='${ch.replace(/'/g,"\\'")}';renderTeacher('videos')">${ch}</div>`).join('')}
+    </div>
+  </div>`:''}
+  ${list.length===0?`<div class="empty"><div class="empty-icon">▶</div><p>No videos for ${_tvc}${_tvSubjFilter!=='All'?' — '+_tvSubjFilter:''}${_tvChapFilter!=='All'?' — '+_tvChapFilter:''}</p></div>`:
+  list.map(v=>{const id=ytId(v.url);return `<div class="card fade" style="padding:0;overflow:hidden;margin-bottom:12px">
+    ${id?`<img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block" loading="lazy" onerror="this.style.display='none'"/>`:
+    `<div style="aspect-ratio:16/9;background:var(--pri);display:flex;align-items:center;justify-content:center;font-size:28px">▶</div>`}
+    <div style="padding:12px 14px">
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <span class="badge" style="background:var(--tealL);color:var(--pri)">${v.cls}</span>
+        <span class="badge" style="background:var(--goldL);color:#92400E">${v.subj}</span>
+        ${v.chapter?`<span class="badge" style="background:rgba(232,72,85,.1);color:var(--acc);font-size:10px">📖 ${v.chapter}</span>`:''}
+      </div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">${v.title}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-out btn-sm" onclick="watchVideoTeacher('${v.id}')">▶ Preview</button>
+        <button class="btn btn-sm" style="background:var(--errL);color:var(--err)" onclick="delV('${v.id}')">Delete</button>
+      </div>
+    </div>
+  </div>`;}).join('')}`;
+}
+
+// TEACHER NOTES
+let _tnc='Class 10';
+let _tnSubjFilter='All';
+let _tnChapFilter='All';
+function tNotes(){
+  const chapList=_tnSubjFilter==='Chemistry'?['All',...(CHEM_CHAPTERS[_tnc]||[])]:[];
+  let list=DB.notes.filter(n=>n.cls===_tnc);
+  if(_tnSubjFilter!=='All') list=list.filter(n=>n.subj===_tnSubjFilter);
+  if(_tnSubjFilter==='Chemistry'&&_tnChapFilter!=='All') list=list.filter(n=>n.chapter===_tnChapFilter);
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:15px;font-weight:800">Notes Library</div>
+    <button class="btn btn-pri btn-sm" onclick="openAddNotes()">+ Add Notes</button>
+  </div>
+  <div class="pills" style="margin-bottom:10px">
+    ${CLASSES.map(c=>`<div class="pill${_tnc===c?' on':''}" onclick="_tnc='${c}';_tnSubjFilter='All';_tnChapFilter='All';renderTeacher('notes')">${c}</div>`).join('')}
+  </div>
+  <div class="pills" style="margin-bottom:${_tnSubjFilter==='Chemistry'?'0':'14'}px">
+    ${['All',...SUBJECTS].map(s=>`<div class="pill${_tnSubjFilter===s?' on':''}" style="font-size:11px" onclick="_tnSubjFilter='${s}';_tnChapFilter='All';renderTeacher('notes')">${s}</div>`).join('')}
+  </div>
+  ${_tnSubjFilter==='Chemistry'?`
+  <div style="margin-top:8px;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.07em;margin-bottom:6px">🧪 CHEMISTRY CHAPTERS</div>
+    <div class="pills">
+      ${chapList.map(ch=>`<div class="pill${_tnChapFilter===ch?' on':''}" style="font-size:11px;background:${_tnChapFilter===ch?'var(--acc)':'#fff'};border-color:${_tnChapFilter===ch?'var(--acc)':'var(--bdr)'}" onclick="_tnChapFilter='${ch.replace(/'/g,"\\'")}';renderTeacher('notes')">${ch}</div>`).join('')}
+    </div>
+  </div>`:''}
+  ${list.length===0?`<div class="empty"><div class="empty-icon">📄</div><p>No notes for ${_tnc}${_tnSubjFilter!=='All'?' — '+_tnSubjFilter:''}${_tnChapFilter!=='All'?' — '+_tnChapFilter:''}</p></div>`:
+  list.map(n=>`<div class="card fade" style="margin-bottom:10px">
+    <div style="display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap">
+      <span class="badge" style="background:var(--tealL);color:var(--pri)">${n.cls}</span>
+      <span class="badge" style="background:var(--goldL);color:#92400E">${n.subj}</span>
+      ${n.chapter?`<span class="badge" style="background:rgba(232,72,85,.1);color:var(--acc);font-size:10px">📖 ${n.chapter}</span>`:''}
+    </div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:5px">${n.title}</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${n.content}</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-out btn-sm" onclick="openReadNotes('${n.id}','teacher')">Read</button>
+      <button class="btn btn-sm" style="background:var(--errL);color:var(--err)" onclick="delN('${n.id}')">Delete</button>
+    </div>
+  </div>`).join('')}`;
+}
+
+// TEACHER TESTS
+let _ttc='Class 10';
+let tForm={title:'',subj:'Mathematics',cls:'Class 10',dur:30,qs:[]};
+let tStep=0;
+
+function tTests(){
+  const list=DB.tests.filter(t=>t.cls===_ttc);
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:15px;font-weight:800">Tests</div>
+    <button class="btn btn-pri btn-sm" onclick="openCreateTest()">+ Create Test</button>
+  </div>
+  <div class="pills" style="margin-bottom:14px">
+    ${CLASSES.map(c=>`<div class="pill${_ttc===c?' on':''}" onclick="_ttc='${c}';renderTeacher('tests')">${c}</div>`).join('')}
+  </div>
+  ${list.length===0?`<div class="empty"><div class="empty-icon">✏️</div><p>No tests for ${_ttc}</p></div>`:
+  list.map(t=>`<div class="card fade" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="badge" style="background:${t.active?'var(--tealL)':'var(--bdr)'};color:${t.active?'var(--teal)':'var(--muted)'}">${t.active?'● Live':'Inactive'}</span>
+      <button class="btn btn-sm" style="background:${t.active?'var(--errL)':'var(--tealL)'};color:${t.active?'var(--err)':'var(--teal)'}" onclick="togTest('${t.id}')">${t.active?'Stop':'Activate'}</button>
+    </div>
+    <div style="font-size:14px;font-weight:800;margin-bottom:3px">${t.title}</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${t.cls} • ${t.subj} • ${t.testType==='gform'?'📋 Google Form':`${t.qs?.length||0} Qs`} • ${t.dur} min${t.negMarking&&t.negMarking!=='0'?` • <span style="color:var(--err)">-${t.negMarking==='custom'?t.negCustom:t.negMarking} neg</span>`:''}</div>
+    <div style="background:var(--pri);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:700;letter-spacing:.08em;margin-bottom:3px">STUDENT CODE</div>
+      <div style="font-family:monospace;font-size:25px;font-weight:800;color:#F4A261;letter-spacing:3px">${t.code}</div>
+    </div>
+    <button class="btn btn-sm" style="background:var(--errL);color:var(--err)" onclick="delTest('${t.id}')">Delete</button>
+  </div>`).join('')}`;
+}
+
+function tResults(){
+  const sorted=[...DB.results].sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
+  const pass=sorted.filter(r=>r.pct>=40).length;
+  const avg=sorted.length?Math.round(sorted.reduce((a,r)=>a+r.pct,0)/sorted.length):0;
+  return `
+  <div style="font-size:15px;font-weight:800;margin-bottom:12px">Results & Analytics</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    <div class="stat" style="background:#E8EDF8"><div style="font-size:22px;font-weight:800;color:var(--pri)">${sorted.length}</div><div style="font-size:11px;color:var(--pri);font-weight:700">Total Attempts</div></div>
+    <div class="stat" style="background:var(--okL)"><div style="font-size:22px;font-weight:800;color:var(--ok)">${pass}</div><div style="font-size:11px;color:var(--ok);font-weight:700">Passed ≥40%</div></div>
+    <div class="stat" style="background:var(--errL)"><div style="font-size:22px;font-weight:800;color:var(--err)">${sorted.length-pass}</div><div style="font-size:11px;color:var(--err);font-weight:700">Failed</div></div>
+    <div class="stat" style="background:var(--goldL)"><div style="font-size:22px;font-weight:800;color:var(--gold)">${avg}%</div><div style="font-size:11px;color:var(--gold);font-weight:700">Class Average</div></div>
+  </div>
+  ${sorted.length===0?`<div class="empty"><div class="empty-icon">📈</div><p>No results yet</p></div>`:
+  sorted.map(r=>`<div class="card fade" style="margin-bottom:8px;padding:13px 15px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:14px;font-weight:800">${r.studentName}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${r.testTitle} • ${r.cls||''}</div>
+        <div style="font-size:10px;color:var(--muted)">${new Date(r.submittedAt).toLocaleString()}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:17px;font-weight:800;color:var(--pri)">${r.score}/${r.total}</div>
+        <span class="badge" style="background:${r.pct>=40?'var(--okL)':'var(--errL)'};color:${r.pct>=40?'var(--ok)':'var(--err)'};margin-top:3px">${r.pct}% ${r.pct>=40?'Pass':'Fail'}</span>
+      </div>
+    </div>
+  </div>`).join('')}`;
+}
+
+// TEACHER ACTIONS
+function delV(id){if(confirm('Delete this video?')){DB.videos=DB.videos.filter(v=>v.id!==id);saveDB();renderTeacher('videos');}}
+function delN(id){if(confirm('Delete this note?')){DB.notes=DB.notes.filter(n=>n.id!==id);saveDB();renderTeacher('notes');}}
+function delTest(id){if(confirm('Delete this test?')){DB.tests=DB.tests.filter(t=>t.id!==id);saveDB();renderTeacher('tests');}}
+function togTest(id){DB.tests=DB.tests.map(t=>t.id===id?{...t,active:!t.active}:t);saveDB();renderTeacher('tests');}
+function delStudent(id){if(confirm('Delete this student?')){DB.students=DB.students.filter(s=>s.id!==id);saveDB();renderTeacher('students');}}
+
+// STUDENTS TAB
+let _tsc='All';
+function tStudents(){
+  if(!DB.students) DB.students=[];
+  const filterCls=_tsc==='All'?DB.students:DB.students.filter(s=>s.cls===_tsc);
+  const sorted=[...filterCls].sort((a,b)=>new Date(b.joinedAt)-new Date(a.joinedAt));
+  const cls10=DB.students.filter(s=>s.cls==='Class 10').length;
+  const cls11=DB.students.filter(s=>s.cls==='Class 11').length;
+  const cls12=DB.students.filter(s=>s.cls==='Class 12').length;
+  return `
+  <div style="font-size:15px;font-weight:800;margin-bottom:12px">👥 Registered Students</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    <div class="stat" style="background:var(--goldL);grid-column:1/-1"><div style="font-size:28px;font-weight:800;color:var(--gold)">${DB.students.length}</div><div style="font-size:12px;color:var(--gold);font-weight:700">Total Students</div></div>
+    <div class="stat" style="background:var(--accL)"><div style="font-size:20px;font-weight:800;color:var(--acc)">${cls10}</div><div style="font-size:11px;color:var(--acc);font-weight:700">Class 10</div></div>
+    <div class="stat" style="background:#E8EDF8"><div style="font-size:20px;font-weight:800;color:var(--pri)">${cls11}</div><div style="font-size:11px;color:var(--pri);font-weight:700">Class 11</div></div>
+    <div class="stat" style="background:var(--tealL);grid-column:1/-1"><div style="font-size:20px;font-weight:800;color:var(--teal)">${cls12}</div><div style="font-size:11px;color:var(--teal);font-weight:700">Class 12</div></div>
+  </div>
+  <div class="pills" style="margin-bottom:14px">
+    ${['All','Class 10','Class 11','Class 12'].map(c=>`<div class="pill${_tsc===c?' on':''}" onclick="_tsc='${c}';renderTeacher('students')">${c}</div>`).join('')}
+  </div>
+  ${sorted.length===0?`<div class="empty"><div class="empty-icon">👥</div><p>No students registered${_tsc==='All'?'':' in '+_tsc}</p></div>`:
+  sorted.map(s=>{
+    const attempts=DB.results.filter(r=>r.studentName===s.name).length;
+    const lastLogin=s.lastLogin?new Date(s.lastLogin).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'Never';
+    return `<div class="card fade" style="margin-bottom:8px;padding:13px 15px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:800">${s.name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${s.cls} • Roll/Phone: ${s.rollId}</div>
+          <div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap">
+            <span style="font-size:10px;color:var(--muted)">📅 Joined: ${new Date(s.joinedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span>
+            <span style="font-size:10px;color:var(--muted)">🔑 Last: ${lastLogin}</span>
+            <span style="font-size:10px;color:var(--muted)">📝 ${attempts} tests</span>
+          </div>
+        </div>
+        <button onclick="delStudent('${s.id}')" style="background:var(--errL);color:var(--err);border:none;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0">✕</button>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+// ADD VIDEO MODAL
+let _vAddTab = 'youtube'; // 'youtube' | 'mp4url' | 'mp4file'
+let _mp4DataUrl = null;
+
+function openAddVideo(){
+  _vAddTab='youtube'; _mp4DataUrl=null;
+  openModal('Add New Video', _vFormHTML());
+}
+
+function _vFormHTML(){
+  return `
+    <div style="margin-bottom:12px"><label class="label">Title *</label><input class="inp" id="v-ti" placeholder="e.g. Quadratic Equations Lecture 1"/></div>
+
+    <!-- Source tabs -->
+    <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:12px">
+      <button onclick="_vTab('youtube')" id="vtab-yt" style="flex:1;padding:8px 4px;font-size:11px;font-weight:800;border:none;cursor:pointer;background:${_vAddTab==='youtube'?'var(--pri)':'#fff'};color:${_vAddTab==='youtube'?'#fff':'var(--muted)'}">▶ YouTube</button>
+      <button onclick="_vTab('mp4url')" id="vtab-url" style="flex:1;padding:8px 4px;font-size:11px;font-weight:800;border:none;border-left:1.5px solid var(--bdr);cursor:pointer;background:${_vAddTab==='mp4url'?'var(--pri)':'#fff'};color:${_vAddTab==='mp4url'?'#fff':'var(--muted)'}">🔗 MP4 URL</button>
+      <button onclick="_vTab('mp4file')" id="vtab-file" style="flex:1;padding:8px 4px;font-size:11px;font-weight:800;border:none;border-left:1.5px solid var(--bdr);cursor:pointer;background:${_vAddTab==='mp4file'?'var(--pri)':'#fff'};color:${_vAddTab==='mp4file'?'#fff':'var(--muted)'}">📁 MP4 File</button>
+    </div>
+
+    <!-- YouTube section -->
+    <div id="vsec-youtube" style="display:${_vAddTab==='youtube'?'block':'none'};margin-bottom:10px">
+      <label class="label">YouTube URL *</label>
+      <input class="inp" id="v-url" placeholder="https://www.youtube.com/watch?v=..." oninput="previewYT()"/>
+      <div id="yt-preview" style="display:none;margin-top:8px;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#000">
+        <iframe id="yt-iframe" width="100%" height="100%" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe>
+      </div>
+    </div>
+
+    <!-- MP4 URL section -->
+    <div id="vsec-mp4url" style="display:${_vAddTab==='mp4url'?'block':'none'};margin-bottom:10px">
+      <label class="label">Direct MP4 / Video URL *</label>
+      <input class="inp" id="v-mp4url" placeholder="https://example.com/lecture.mp4" oninput="previewMP4URL()"/>
+      <div id="mp4url-preview" style="display:none;margin-top:8px;border-radius:10px;overflow:hidden;background:#111;padding:10px;text-align:center">
+        <video id="mp4url-vid" controls style="width:100%;border-radius:8px;max-height:160px"></video>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted)">Any direct .mp4, .webm, or .mov link will work</div>
+    </div>
+
+    <!-- MP4 File Upload section -->
+    <div id="vsec-mp4file" style="display:${_vAddTab==='mp4file'?'block':'none'};margin-bottom:10px">
+      <label class="label">MP4 File Upload *</label>
+      <div id="mp4-dropzone" onclick="document.getElementById('v-mp4file').click()"
+        style="border:2px dashed var(--bdr);border-radius:10px;padding:22px 14px;text-align:center;cursor:pointer;background:var(--bg);transition:all .15s"
+        ondragover="event.preventDefault();this.style.borderColor='var(--pri)'"
+        ondragleave="this.style.borderColor='var(--bdr)'"
+        ondrop="event.preventDefault();this.style.borderColor='var(--bdr)';_handleMP4Drop(event.dataTransfer.files[0])">
+        <div style="font-size:28px;margin-bottom:6px">📁</div>
+        <div style="font-weight:800;font-size:13px;color:var(--pri)">Click to choose an MP4 file</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">or drag a file here • MP4, WebM, MOV</div>
+      </div>
+      <input type="file" id="v-mp4file" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.mov" style="display:none" onchange="_handleMP4File(this.files[0])"/>
+      <div id="mp4file-preview" style="display:none;margin-top:10px">
+        <video id="mp4file-vid" controls style="width:100%;border-radius:8px;max-height:160px;background:#000"></video>
+        <div id="mp4file-info" style="margin-top:6px;font-size:11px;color:var(--muted);text-align:center"></div>
+        <div style="margin-top:6px;padding:8px 10px;background:var(--warnL);border-radius:7px;font-size:11px;color:#92400E;font-weight:700">
+          ⚠️ File plays on this device only — use a URL for sharing with all students
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label class="label">Class</label><select class="inp" id="v-cls" onchange="_vUpdateChapDrop()">${CLASSES.map(c=>`<option${c===_tvc?' selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label class="label">Subject</label><select class="inp" id="v-subj" onchange="_vUpdateChapDrop()">${SUBJECTS.map(s=>`<option>${s}</option>`).join('')}</select></div>
+    </div>
+    <div id="v-chap-wrap" style="display:none;margin-bottom:10px">
+      <label class="label">🧪 Chemistry Chapter</label>
+      <select class="inp" id="v-chap"><option value="">-- Select Chapter --</option></select>
+    </div>
+    <div style="margin-bottom:14px"><label class="label">Description</label><textarea class="inp" id="v-desc" placeholder="What is covered in this video?"></textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-pri" onclick="saveVideo()">💾 Save Video</button>
+      <button class="btn btn-out" onclick="closeModal()">Cancel</button>
+    </div>`;
+}
+
+function _vUpdateChapDrop(){
+  const cls=document.getElementById('v-cls')?.value||_tvc;
+  const subj=document.getElementById('v-subj')?.value||'';
+  const wrap=document.getElementById('v-chap-wrap');
+  const sel=document.getElementById('v-chap');
+  if(!wrap||!sel) return;
+  if(subj==='Chemistry'){
+    wrap.style.display='block';
+    const chapters=CHEM_CHAPTERS[cls]||[];
+    sel.innerHTML='<option value="">-- Select Chapter --</option>'+chapters.map(ch=>`<option>${ch}</option>`).join('');
+  } else {
+    wrap.style.display='none';
+    sel.innerHTML='';
+  }
+}
+
+function _vTab(tab){
+  _vAddTab=tab;
+  const ti=document.getElementById('v-ti')?.value||'';
+  const desc=document.getElementById('v-desc')?.value||'';
+  const cls=document.getElementById('v-cls')?.value||_tvc;
+  const subj=document.getElementById('v-subj')?.value||'Mathematics';
+  openModal('Add New Video', _vFormHTML());
+  // Restore values
+  setTimeout(()=>{
+    if(document.getElementById('v-ti')) document.getElementById('v-ti').value=ti;
+    if(document.getElementById('v-desc')) document.getElementById('v-desc').value=desc;
+    if(document.getElementById('v-cls')) document.getElementById('v-cls').value=cls;
+    if(document.getElementById('v-subj')) document.getElementById('v-subj').value=subj;
+  },10);
+}
+
+function previewYT(){
+  const url=document.getElementById('v-url')?.value||'';
+  const id=ytId(url);
+  const ytBox=document.getElementById('yt-preview');
+  const fr=document.getElementById('yt-iframe');
+  if(!ytBox||!fr) return;
+  if(id){ fr.src=`https://www.youtube.com/embed/${id}?rel=0`; ytBox.style.display='block'; }
+  else { ytBox.style.display='none'; fr.src=''; }
+}
+
+function previewMP4URL(){
+  const url=document.getElementById('v-mp4url')?.value||'';
+  const box=document.getElementById('mp4url-preview');
+  const vid=document.getElementById('mp4url-vid');
+  if(!box||!vid) return;
+  if(url){ vid.src=url; box.style.display='block'; }
+  else { box.style.display='none'; vid.src=''; }
+}
+
+function _handleMP4File(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    _mp4DataUrl=e.target.result;
+    const box=document.getElementById('mp4file-preview');
+    const vid=document.getElementById('mp4file-vid');
+    const info=document.getElementById('mp4file-info');
+    const dz=document.getElementById('mp4-dropzone');
+    if(box) box.style.display='block';
+    if(dz) dz.style.display='none';
+    if(vid){ vid.src=_mp4DataUrl; }
+    if(info) info.textContent=`${file.name} • ${(file.size/1024/1024).toFixed(1)} MB`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function _handleMP4Drop(file){ if(file) _handleMP4File(file); }
+
+function saveVideo(){
+  const ti=document.getElementById('v-ti')?.value.trim();
+  if(!ti) return alert('Please enter a title');
+
+  let url='';
+  if(_vAddTab==='youtube'){
+    url=document.getElementById('v-url')?.value.trim();
+    if(!url||!ytId(url)) return alert('Please enter a valid YouTube URL');
+  } else if(_vAddTab==='mp4url'){
+    url=document.getElementById('v-mp4url')?.value.trim();
+    if(!url) return alert('Please enter an MP4 URL');
+  } else if(_vAddTab==='mp4file'){
+    if(!_mp4DataUrl) return alert('Please choose an MP4 file first');
+    url=_mp4DataUrl;
+  }
+
+  const vSubj=document.getElementById('v-subj').value;
+  const vCls=document.getElementById('v-cls').value;
+  const vChap=(vSubj==='Chemistry'&&document.getElementById('v-chap'))?document.getElementById('v-chap').value:'';
+  DB.videos.push({id:uid(),title:ti,url,cls:vCls,subj:vSubj,chapter:vChap,desc:document.getElementById('v-desc')?.value||'',added:new Date().toISOString()});
+  saveDB(); closeModal(); renderTeacher('videos');
+  _mp4DataUrl=null;
+}
+
+// ADD NOTES MODAL
+function openAddNotes(){
+  openModal('Add Notes',`
+    <div style="margin-bottom:10px"><label class="label">Title *</label><input class="inp" id="n-ti" placeholder="e.g. Chapter 4 — Quadratic Equations"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label class="label">Class</label><select class="inp" id="n-cls" onchange="_nUpdateChapDrop()">${CLASSES.map(c=>`<option${c===_tnc?' selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label class="label">Subject</label><select class="inp" id="n-subj" onchange="_nUpdateChapDrop()">${SUBJECTS.map(s=>`<option>${s}</option>`).join('')}</select></div>
+    </div>
+    <div id="n-chap-wrap" style="display:none;margin-bottom:10px">
+      <label class="label">🧪 Chemistry Chapter</label>
+      <select class="inp" id="n-chap"><option value="">-- Select Chapter --</option></select>
+    </div>
+    <div style="margin-bottom:14px"><label class="label">Notes Content *</label><textarea class="inp" id="n-con" style="min-height:180px" placeholder="Type complete notes here..."></textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-pri" onclick="saveNotes()">Save Notes</button>
+      <button class="btn btn-out" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+
+function _nUpdateChapDrop(){
+  const cls=document.getElementById('n-cls')?.value||_tnc;
+  const subj=document.getElementById('n-subj')?.value||'';
+  const wrap=document.getElementById('n-chap-wrap');
+  const sel=document.getElementById('n-chap');
+  if(!wrap||!sel) return;
+  if(subj==='Chemistry'){
+    wrap.style.display='block';
+    const chapters=CHEM_CHAPTERS[cls]||[];
+    sel.innerHTML='<option value="">-- Select Chapter --</option>'+chapters.map(ch=>`<option>${ch}</option>`).join('');
+  } else {
+    wrap.style.display='none';
+    sel.innerHTML='';
+  }
+}
+
+function saveNotes(){
+  const ti=document.getElementById('n-ti').value.trim();
+  const con=document.getElementById('n-con').value.trim();
+  if(!ti||!con) return alert('Title and content are required');
+  const nSubj=document.getElementById('n-subj').value;
+  const nCls=document.getElementById('n-cls').value;
+  const nChap=(nSubj==='Chemistry'&&document.getElementById('n-chap'))?document.getElementById('n-chap').value:'';
+  DB.notes.push({id:uid(),title:ti,content:con,cls:nCls,subj:nSubj,chapter:nChap,added:new Date().toISOString()});
+  saveDB();closeModal();renderTeacher('notes');
+}
+
+// ============================================================
+// CREATE TEST MODAL
+// ============================================================
+function openCreateTest(){
+  tForm={title:'',subj:'Mathematics',cls:_ttc,dur:30,qs:[],negMarking:'0',negCustom:0.25,testType:'mcq',marksPerQ:1};
+  tStep=1;
+  window._aiN=10;
+  showTestStep();
+}
+
+function showTestStep(){
+  const steps=['Test Info','Add Questions','Review & Publish'];
+  const bar=steps.map((s,i)=>`<div style="flex:1;text-align:center;padding:7px 4px;border-radius:7px;background:${tStep>i?'var(--pri)':'var(--bg)'};color:${tStep>i?'#fff':'var(--muted)'};font-size:11px;font-weight:700">${i+1}. ${s}</div>`).join('');
+
+  let body=`<div style="display:flex;gap:4px;margin-bottom:18px">${bar}</div>`;
+
+  if(tStep===1){
+    const nm=tForm.negMarking||'0';
+    body+=`
+    <!-- Test Type -->
+    <div style="margin-bottom:12px">
+      <label class="label">Test Type</label>
+      <div style="display:flex;border:1.5px solid var(--bdr);border-radius:9px;overflow:hidden">
+        <button onclick="tForm.testType='mcq';showTestStep()" style="flex:1;padding:9px 4px;font-size:12px;font-weight:800;border:none;cursor:pointer;background:${tForm.testType!=='gform'?'var(--pri)':'#fff'};color:${tForm.testType!=='gform'?'#fff':'var(--muted)'}">✏️ MCQ Test</button>
+        <button onclick="tForm.testType='gform';showTestStep()" style="flex:1;padding:9px 4px;font-size:12px;font-weight:800;border:none;border-left:1.5px solid var(--bdr);cursor:pointer;background:${tForm.testType==='gform'?'var(--pri)':'#fff'};color:${tForm.testType==='gform'?'#fff':'var(--muted)'}">📋 Google Form</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px"><label class="label">Test Title *</label><input class="inp" id="t-ti" value="${tForm.title}" placeholder="e.g. Chapter 5 Mid Term"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label class="label">Class</label><select class="inp" id="t-cls">${CLASSES.map(c=>`<option${c===tForm.cls?' selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label class="label">Subject</label><select class="inp" id="t-subj">${SUBJECTS.map(s=>`<option${s===tForm.subj?' selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div style="margin-bottom:10px"><label class="label">Duration (minutes)</label><input class="inp" type="number" id="t-dur" value="${tForm.dur}" min="5" max="180"/></div>
+
+    ${tForm.testType==='gform'?`
+    <!-- Google Form URL -->
+    <div style="margin-bottom:10px">
+      <label class="label">Google Form URL *</label>
+      <input class="inp" id="t-gurl" value="${tForm.gformUrl||''}" placeholder="https://docs.google.com/forms/d/e/.../viewform"/>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">Google Form → Send → 🔗 Copy the link and paste it here</div>
+    </div>
+    <div style="padding:10px 12px;background:var(--tealL);border-radius:8px;font-size:11px;color:var(--teal);font-weight:700;margin-bottom:10px">
+      ✅ Form will open inside the app • Timer countdown will run
+    </div>`:`
+    <!-- Marks per Question -->
+    <div style="margin-bottom:10px">
+      <label class="label">Marks per Question</label>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:6px">
+        ${[1,2,3,4,5].map(m=>`<button onclick="tForm.marksPerQ=${m};showTestStep()" style="padding:8px 4px;font-size:13px;font-weight:800;border:1.5px solid ${tForm.marksPerQ===m?'var(--pri)':'var(--bdr)'};border-radius:7px;background:${tForm.marksPerQ===m?'var(--pri)':'#fff'};color:${tForm.marksPerQ===m?'#fff':'var(--muted)'};cursor:pointer">${m}</button>`).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--muted)">Same marks for all questions. You can change individual marks in Step 2.</div>
+    </div>
+    <!-- Negative Marking (MCQ only) -->
+    <div style="margin-bottom:14px">
+      <label class="label">Negative Marking</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        ${[['0','None'],['0.25','-¼ (JEE/NEET)'],['0.33','-⅓'],['custom','Custom']].map(([v,lbl])=>`
+          <button onclick="tForm.negMarking='${v}';showTestStep()" style="padding:7px 4px;font-size:11px;font-weight:800;border:1.5px solid ${nm===v?'var(--pri)':'var(--bdr)'};border-radius:7px;background:${nm===v?'var(--pri)':'#fff'};color:${nm===v?'#fff':'var(--muted)'};cursor:pointer">${lbl}</button>
+        `).join('')}
+      </div>
+      ${nm==='custom'?`<div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;color:var(--muted)">Deduct:</span>
+        <input class="inp" type="number" id="t-negcustom" value="${tForm.negCustom||0.25}" min="0.01" max="4" step="0.01" style="width:90px"/>
+        <span style="font-size:12px;color:var(--muted)">marks per wrong ans</span>
+      </div>`:''}
+      ${nm!=='0'?`<div style="margin-top:6px;padding:8px 10px;background:var(--warnL);border-radius:7px;font-size:11px;color:#92400E;font-weight:700">⚠️ Wrong answer pe -${nm==='custom'?tForm.negCustom:nm} marks katenge • Unattempted = 0</div>`:''}
+    </div>`}
+
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-pri" onclick="tStep1()">Next →</button>
+      <button class="btn btn-out" onclick="closeModal()">Cancel</button>
+    </div>`;
+  } else if(tStep===2){
+    const qc=tForm.qs.length;
+    const totalMaxMarks=tForm.qs.reduce((sum,q)=>sum+(q.marks||tForm.marksPerQ||1),0);
+    body+=`
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <div style="flex:1;padding:10px 12px;background:var(--tealL);border-radius:8px;font-size:12px;color:var(--teal);font-weight:700">${qc} Question${qc!==1?'s':''} added</div>
+      ${qc>0?`<div style="padding:10px 12px;background:var(--goldL);border-radius:8px;font-size:12px;color:#92400E;font-weight:700">Max: ${totalMaxMarks} Marks</div>`:''}
+    </div>
+
+    <div style="background:var(--accL);border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid rgba(232,72,85,.15)">
+      <div style="font-size:13px;font-weight:800;color:var(--acc);margin-bottom:10px">🤖 AI Question Generator</div>
+      <div style="margin-bottom:8px"><label class="label">Your Anthropic API Key</label>
+        <input class="inp" id="ai-key" type="password" placeholder="sk-ant-..." value="${localStorage.getItem('nuc_akey')||''}"/>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">Get free key at console.anthropic.com • Stored locally only</div>
+      </div>
+      <div style="margin-bottom:8px"><label class="label">Topic</label><input class="inp" id="ai-top" placeholder="e.g. Quadratic Equations, Photosynthesis..."/></div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">
+        <span style="font-size:12px;color:var(--muted);white-space:nowrap">No. of Qs:</span>
+        ${[5,10,15,20].map(n=>`<button class="btn btn-sm" style="${window._aiN===n?'background:var(--acc);color:#fff':'background:#fff;color:var(--muted);border:1.5px solid var(--bdr)'}" onclick="window._aiN=${n};showTestStep()">${n}</button>`).join('')}
+      </div>
+      <button class="btn btn-acc btn-full" id="ai-go" onclick="runAI()">✨ Generate Questions</button>
+    </div>
+
+    <div style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px">✍ Add Manual Question</div>
+      <input class="inp" id="mq-q" placeholder="Question text" style="margin-bottom:8px"/>
+      <div style="margin-bottom:8px">
+        <label class="label">Question Image (optional)</label>
+        <input type="file" id="mq-img" accept="image/*" onchange="previewQImg(this)" style="font-size:12px"/>
+        <img id="mq-img-preview" class="img-preview" style="display:none"/>
+      </div>
+      ${[0,1,2,3].map(i=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:7px">
+        <input type="radio" name="mq-cor" value="${i}" ${i===0?'checked':''}/>
+        <input class="inp" id="mq-a${i}" placeholder="Option ${['A','B','C','D'][i]}" style="flex:1"/>
+      </div>`).join('')}
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:10px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid var(--bdr)">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">Marks for this Q:</span>
+        <input class="inp" type="number" id="mq-marks" value="${tForm.marksPerQ||1}" min="1" max="100" style="width:70px;text-align:center;font-weight:800;font-size:15px;padding:6px"/>
+        <span style="font-size:11px;color:var(--muted)">(default: ${tForm.marksPerQ||1})</span>
+      </div>
+      <button class="btn btn-sm btn-pri" onclick="addManualQ()">+ Add Question</button>
+    </div>
+
+    ${qc>0?`<div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">Questions Preview (${qc})</div>
+      <div style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+        ${tForm.qs.map((q,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#fff;border-radius:7px;border:1px solid var(--bdr);font-size:12px">
+          <span style="flex:1;margin-right:8px">${i+1}. ${q.q.substring(0,45)}${q.q.length>45?'...':''} ${q.img?'🖼':''}  ✓${['A','B','C','D'][q.correct]}</span>
+          <span style="background:var(--goldL);color:#92400E;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:800;margin-right:4px">${q.marks||tForm.marksPerQ||1}M</span>
+          <button onclick="tForm.qs.splice(${i},1);showTestStep()" style="background:var(--errL);color:var(--err);border:none;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:11px">✕</button>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-out" onclick="tStep=1;showTestStep()">← Back</button>
+      <button class="btn btn-pri" onclick="tStep2()">${qc>0?'Next →':'Next (add Qs first)'}</button>
+    </div>`;
+  } else {
+    const negLabel = tForm.negMarking==='0'?'None':tForm.negMarking==='custom'?`-${tForm.negCustom} (custom)`:'-'+tForm.negMarking;
+    const totalMax = tForm.qs.reduce((s,q)=>s+(q.marks||tForm.marksPerQ||1),0);
+    body+=`
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><div class="label">Title</div><div style="font-size:13px;font-weight:700">${tForm.title}</div></div>
+      <div><div class="label">Type</div><div style="font-size:13px;font-weight:700">${tForm.testType==='gform'?'📋 Google Form':'✏️ MCQ'}</div></div>
+      <div><div class="label">Class</div><div style="font-size:13px;font-weight:700">${tForm.cls}</div></div>
+      <div><div class="label">Subject</div><div style="font-size:13px;font-weight:700">${tForm.subj}</div></div>
+      ${tForm.testType!=='gform'?`<div><div class="label">Questions</div><div style="font-size:13px;font-weight:700">${tForm.qs.length}</div></div>`:''}
+      <div><div class="label">Duration</div><div style="font-size:13px;font-weight:700">${tForm.dur} min</div></div>
+      ${tForm.testType!=='gform'?`
+      <div><div class="label">Max Marks</div><div style="font-size:13px;font-weight:800;color:var(--gold)">🏆 ${totalMax}</div></div>
+      <div><div class="label">Neg. Marking</div><div style="font-size:13px;font-weight:700;color:${tForm.negMarking!=='0'?'var(--err)':'var(--ok)'}">${negLabel}</div></div>`:''}
+    </div>
+    <div style="background:var(--accL);border-radius:8px;padding:11px 13px;margin-bottom:14px;font-size:12px;color:var(--acc)">A unique code will be generated. Share it with students to attempt this test.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-out" onclick="tStep=2;showTestStep()">← Back</button>
+      <button class="btn" style="background:var(--teal);color:var(--pri)" onclick="publishTest()">🚀 Publish Test</button>
+    </div>`;
+  }
+  openModal('Create Test',body,true);
+}
+
+function tStep1(){
+  tForm.title=document.getElementById('t-ti').value.trim();
+  tForm.cls=document.getElementById('t-cls').value;
+  tForm.subj=document.getElementById('t-subj').value;
+  tForm.dur=parseInt(document.getElementById('t-dur').value)||30;
+  if(tForm.testType==='gform'){
+    tForm.gformUrl=document.getElementById('t-gurl')?.value.trim()||'';
+    if(!tForm.title) return alert('Please enter a title');
+    if(!tForm.gformUrl) return alert('Please enter a Google Form URL');
+    tStep=3; showTestStep(); return;
+  }
+  // MCQ
+  tForm.marksPerQ=parseInt(document.getElementById('t-mpq')?.value)||tForm.marksPerQ||1;
+  if(tForm.negMarking==='custom'){
+    tForm.negCustom=parseFloat(document.getElementById('t-negcustom')?.value)||0.25;
+  }
+  if(!tForm.title) return alert('Please enter a test title');
+  tStep=2;showTestStep();
+}
+
+function tStep2(){
+  if(tForm.qs.length===0) return alert('Please add at least one question');
+  tStep=3;showTestStep();
+}
+
+function previewQImg(input){
+  const file=input.files[0];if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=document.getElementById('mq-img-preview');
+    img.src=e.target.result;img.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function addManualQ(){
+  const q=document.getElementById('mq-q')?.value?.trim();
+  const a=[0,1,2,3].map(i=>document.getElementById('mq-a'+i)?.value?.trim()||'');
+  const cor=parseInt(document.querySelector('input[name="mq-cor"]:checked')?.value||'0');
+  const img=document.getElementById('mq-img-preview')?.src;
+  const marks=parseInt(document.getElementById('mq-marks')?.value)||tForm.marksPerQ||1;
+  if(!q||a.some(x=>!x)) return alert('Please fill in the question and all 4 options');
+  tForm.qs.push({q,a,correct:cor,marks,img:img&&img.startsWith('data:')?img:null});
+  showTestStep();
+}
+
+async function runAI(){
+  const key=document.getElementById('ai-key')?.value?.trim();
+  const topic=document.getElementById('ai-top')?.value?.trim();
+  if(!key) return alert('Enter your Anthropic API key first.\nGet it free at console.anthropic.com');
+  if(!topic) return alert('Enter a topic');
+  localStorage.setItem('nuc_akey',key);
+  const btn=document.getElementById('ai-go');
+  if(btn){btn.textContent='⏳ Generating…';btn.disabled=true;}
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:1500,
+        system:'Return ONLY valid JSON array. No markdown. No explanation. Format: [{"q":"question text","a":["option1","option2","option3","option4"],"correct":0}] where correct is 0-indexed integer.',
+        messages:[{role:'user',content:`Create exactly ${window._aiN||10} high-quality MCQ questions for Indian school students on: "${topic}". Class: ${tForm.cls}, Subject: ${tForm.subj}. Difficulty: exam level.`}]})
+    });
+    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||'API error');}
+    const d=await res.json();
+    const text=d.content?.[0]?.text||'[]';
+    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(!Array.isArray(parsed)||parsed.length===0) throw new Error('No questions generated');
+    tForm.qs.push(...parsed);
+    showTestStep();
+  } catch(e){
+    if(btn){btn.textContent='✨ Generate Questions';btn.disabled=false;}
+    alert('Error: '+e.message+'\n\nCheck your API key and try again.');
+  }
+}
+
+function publishTest(){
+  DB.tests.push({...tForm,id:uid(),code:code6(),active:true,created:new Date().toISOString()});
+  saveDB();closeModal();renderTeacher('tests');
+}
+
+// ============================================================
+// STUDENT
+// ============================================================
+function renderStudentHome(){
+  const firstName = currentStudent ? currentStudent.name.split(' ')[0] : 'Student';
+  const totalV=DB.videos.length, totalN=DB.notes.length, totalT=DB.tests.filter(t=>t.active).length;
+  const clsGradients={
+    'Class 10':'linear-gradient(135deg,#E84855 0%,#c0392b 100%)',
+    'Class 11':'linear-gradient(135deg,#0A2463 0%,#1a4a9e 100%)',
+    'Class 12':'linear-gradient(135deg,#06D6A0 0%,#059669 100%)'
+  };
+  const clsEmoji={'Class 10':'🔬','Class 11':'⚡','Class 12':'🚀'};
+  document.getElementById('s-body').innerHTML=`
+  <!-- Hero -->
+  <div class="phero fade">
+    <div style="position:relative;z-index:2">
+      <div class="gbadge" style="margin-bottom:12px">⚛ NUCLEON PLATFORM</div>
+      <div style="color:#fff;font-size:22px;font-weight:800;line-height:1.2;margin-bottom:5px">
+        Welcome back,<br>${firstName}! 👋
+      </div>
+      ${currentStudent?`<div style="color:rgba(255,255,255,.5);font-size:12px;margin-bottom:16px">${currentStudent.cls} &nbsp;•&nbsp; ID: ${currentStudent.rollId}</div>`:''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="pchip">▶ ${totalV} Lectures</div>
+        <div class="pchip">📄 ${totalN} Notes</div>
+        <div class="pchip">✏️ ${totalT} Live Tests</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class heading -->
+  <div style="color:rgba(255,255,255,.4);font-size:10px;font-weight:800;letter-spacing:.1em;margin-bottom:14px">SELECT YOUR CLASS</div>
+
+  <!-- Premium class cards -->
+  ${CLASSES.map((cls,i)=>{
+    const grad=clsGradients[cls]||'linear-gradient(135deg,#333,#666)';
+    const emoji=clsEmoji[cls]||'📚';
+    const vCount=DB.videos.filter(v=>v.cls===cls).length;
+    const nCount=DB.notes.filter(n=>n.cls===cls).length;
+    const tCount=DB.tests.filter(t=>t.cls===cls&&t.active).length;
+    const clsNum=cls.replace('Class ','');
+    return `<div class="pcls-card fade" onclick="openClass('${cls}')" style="background:${grad}">
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.4) 100%);z-index:1"></div>
+      <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.07);z-index:1"></div>
+      <div style="position:absolute;top:10px;right:14px;font-size:52px;opacity:.18;z-index:1;line-height:1">${clsNum}</div>
+      <div class="pcls-inner">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;backdrop-filter:blur(8px)">${emoji}</div>
+          <div>
+            <div style="color:rgba(255,255,255,.65);font-size:11px;font-weight:700;letter-spacing:.08em">CLASS</div>
+            <div style="color:#fff;font-size:24px;font-weight:900;line-height:1">${clsNum}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px">
+          <div class="pchip">▶ ${vCount} Lectures</div>
+          <div class="pchip">📄 ${nCount} Notes</div>
+          <div class="pchip">✏️ ${tCount} Tests</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="color:rgba(255,255,255,.6);font-size:12px;font-weight:700">${cls}</div>
+          <div style="background:rgba(255,255,255,.2);border-radius:8px;padding:7px 14px;color:#fff;font-size:12px;font-weight:800;backdrop-filter:blur(8px)">Open →</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+let cvTab_current='videos';
+function openClass(cls){
+  selClass=cls;
+  cvTab_current='videos';
+  _cvSubjFilter='All'; _cvChapFilter='All';
+  _cvNotesSubjFilter='All'; _cvNotesChapFilter='All';
+  document.getElementById('cv-title').textContent=cls;
+  document.querySelectorAll('#pg-classview .bnav .bni').forEach((b,i)=>b.classList.toggle('on',i===0));
+  renderClassView('videos');
+  go('classview');
+}
+
+function cvTab(tab,el){
+  cvTab_current=tab;
+  document.querySelectorAll('#pg-classview .bnav .bni').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderClassView(tab);
+}
+
+function renderClassView(tab){
+  const b=document.getElementById('cv-body');
+  if(tab==='videos') b.innerHTML=cvVideos();
+  else if(tab==='notes') b.innerHTML=cvNotes();
+  else b.innerHTML=cvTests();
+  b.classList.add('fade');
+}
+
+let _cvSubjFilter='All';
+let _cvChapFilter='All';
+
+function cvVideos(){
+  const chapList=_cvSubjFilter==='Chemistry'?['All',...(CHEM_CHAPTERS[selClass]||[])]:[];
+  let list=DB.videos.filter(v=>v.cls===selClass);
+  if(_cvSubjFilter!=='All') list=list.filter(v=>v.subj===_cvSubjFilter);
+  if(_cvSubjFilter==='Chemistry'&&_cvChapFilter!=='All') list=list.filter(v=>v.chapter===_cvChapFilter);
+
+  const allSubjs=['All',...[...new Set(DB.videos.filter(v=>v.cls===selClass).map(v=>v.subj))]];
+  if(list.length===0 && _cvSubjFilter==='All' && allSubjs.length<=1)
+    return `<div class="pempty fade"><span class="pempty-icon">▶</span><p>No lectures added yet for ${selClass}</p></div>`;
+
+  return `
+  <div class="pills" style="margin-bottom:10px">
+    ${allSubjs.map(s=>`<div class="pill${_cvSubjFilter===s?' on':''}" style="font-size:11px;background:${_cvSubjFilter===s?'var(--acc)':'rgba(255,255,255,.07)'};color:${_cvSubjFilter===s?'#fff':'rgba(255,255,255,.6)'};border-color:${_cvSubjFilter===s?'var(--acc)':'rgba(255,255,255,.12)'}" onclick="_cvSubjFilter='${s}';_cvChapFilter='All';renderClassView('videos')">${s}</div>`).join('')}
+  </div>
+  ${_cvSubjFilter==='Chemistry'?`
+  <div style="margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.07em;margin-bottom:6px">🧪 CHEMISTRY CHAPTERS</div>
+    <div class="pills">
+      ${chapList.map(ch=>`<div class="pill${_cvChapFilter===ch?' on':''}" style="font-size:10px;background:${_cvChapFilter===ch?'var(--teal)':'rgba(255,255,255,.05)'};color:${_cvChapFilter===ch?'var(--pri)':'rgba(255,255,255,.55)'};border-color:${_cvChapFilter===ch?'var(--teal)':'rgba(255,255,255,.1)'}" onclick="_cvChapFilter='${ch.replace(/'/g,"\\'")}';renderClassView('videos')">${ch}</div>`).join('')}
+    </div>
+  </div>`:''}
+  ${list.length===0?`<div class="pempty fade"><span class="pempty-icon">▶</span><p>No lectures for ${_cvSubjFilter!=='All'?_cvSubjFilter:selClass}${_cvChapFilter!=='All'?' — '+_cvChapFilter:''}</p></div>`:''}
+  ${list.map(v=>{
+    const id=ytId(v.url);
+    return `<div class="pcard fade" onclick="watchVideo('${v.id}')">
+      ${id?`<img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block" loading="lazy"/>`:
+      `<div style="aspect-ratio:16/9;background:linear-gradient(135deg,rgba(232,72,85,.2),rgba(10,36,99,.4));display:flex;align-items:center;justify-content:center;font-size:36px">▶</div>`}
+      <div style="padding:12px 14px">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
+          <span style="display:inline-block;background:rgba(244,162,97,.18);color:#F4A261;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;border:1px solid rgba(244,162,97,.25)">${v.subj}</span>
+          ${v.chapter?`<span style="display:inline-block;background:rgba(6,214,160,.12);color:var(--teal);font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;border:1px solid rgba(6,214,160,.2)">📖 ${v.chapter}</span>`:''}
+        </div>
+        <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:6px;line-height:1.4">${v.title}</div>
+        ${v.desc?`<div style="color:rgba(255,255,255,.4);font-size:11px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${v.desc}</div>`:''}
+        <div style="margin-top:10px;color:var(--acc);font-size:12px;font-weight:800;display:flex;align-items:center;gap:5px">▶ Watch Lecture <span style="opacity:.6">→</span></div>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+let _cvNotesSubjFilter='All';
+let _cvNotesChapFilter='All';
+
+function cvNotes(){
+  const chapList=_cvNotesSubjFilter==='Chemistry'?['All',...(CHEM_CHAPTERS[selClass]||[])]:[];
+  let list=DB.notes.filter(n=>n.cls===selClass);
+  if(_cvNotesSubjFilter!=='All') list=list.filter(n=>n.subj===_cvNotesSubjFilter);
+  if(_cvNotesSubjFilter==='Chemistry'&&_cvNotesChapFilter!=='All') list=list.filter(n=>n.chapter===_cvNotesChapFilter);
+
+  const allSubjs=['All',...[...new Set(DB.notes.filter(n=>n.cls===selClass).map(n=>n.subj))]];
+  if(list.length===0 && _cvNotesSubjFilter==='All' && allSubjs.length<=1)
+    return `<div class="pempty fade"><span class="pempty-icon">📄</span><p>No notes added yet for ${selClass}</p></div>`;
+
+  return `
+  <div class="pills" style="margin-bottom:10px">
+    ${allSubjs.map(s=>`<div class="pill${_cvNotesSubjFilter===s?' on':''}" style="font-size:11px;background:${_cvNotesSubjFilter===s?'var(--acc)':'rgba(255,255,255,.07)'};color:${_cvNotesSubjFilter===s?'#fff':'rgba(255,255,255,.6)'};border-color:${_cvNotesSubjFilter===s?'var(--acc)':'rgba(255,255,255,.12)'}" onclick="_cvNotesSubjFilter='${s}';_cvNotesChapFilter='All';renderClassView('notes')">${s}</div>`).join('')}
+  </div>
+  ${_cvNotesSubjFilter==='Chemistry'?`
+  <div style="margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.07em;margin-bottom:6px">🧪 CHEMISTRY CHAPTERS</div>
+    <div class="pills">
+      ${chapList.map(ch=>`<div class="pill${_cvNotesChapFilter===ch?' on':''}" style="font-size:10px;background:${_cvNotesChapFilter===ch?'var(--teal)':'rgba(255,255,255,.05)'};color:${_cvNotesChapFilter===ch?'var(--pri)':'rgba(255,255,255,.55)'};border-color:${_cvNotesChapFilter===ch?'var(--teal)':'rgba(255,255,255,.1)'}" onclick="_cvNotesChapFilter='${ch.replace(/'/g,"\\'")}';renderClassView('notes')">${ch}</div>`).join('')}
+    </div>
+  </div>`:''}
+  ${list.length===0?`<div class="pempty fade"><span class="pempty-icon">📄</span><p>No notes for ${_cvNotesSubjFilter!=='All'?_cvNotesSubjFilter:selClass}${_cvNotesChapFilter!=='All'?' — '+_cvNotesChapFilter:''}</p></div>`:''}
+  ${list.map(n=>`<div class="pcard fade" onclick="openReadNotes('${n.id}','classview')">
+    <div style="padding:14px 16px">
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+        <span style="display:inline-block;background:rgba(244,162,97,.18);color:#F4A261;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;border:1px solid rgba(244,162,97,.25)">${n.subj}</span>
+        ${n.chapter?`<span style="display:inline-block;background:rgba(6,214,160,.12);color:var(--teal);font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;border:1px solid rgba(6,214,160,.2)">📖 ${n.chapter}</span>`:''}
+      </div>
+      <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:6px">${n.title}</div>
+      <div style="color:rgba(255,255,255,.35);font-size:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${n.content}</div>
+      <div style="margin-top:10px;color:var(--teal);font-size:12px;font-weight:800">Read Notes →</div>
+    </div>
+  </div>`).join('')}`;
+}
+
+function cvTests(){
+  const list=DB.tests.filter(t=>t.cls===selClass&&t.active);
+  return `
+  <div style="margin-bottom:16px">
+    <div class="pcard fade" style="margin-bottom:14px">
+      <div style="padding:22px 18px;text-align:center">
+        <div style="width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,rgba(232,72,85,.3),rgba(10,36,99,.5));display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px">✏️</div>
+        <div style="color:#fff;font-size:16px;font-weight:800;margin-bottom:5px">Enter Test Code</div>
+        <div style="color:rgba(255,255,255,.4);font-size:12px;margin-bottom:16px">Use the code given by your teacher</div>
+        <input class="inp" id="s-code" placeholder="TEST CODE (e.g. ABC123)" style="text-align:center;font-size:17px;font-weight:800;letter-spacing:3px;margin-bottom:10px;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:#fff"/>
+        <input class="inp" id="s-name" placeholder="Your Full Name" style="margin-bottom:12px;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:#fff"/>
+        <button class="btn btn-acc btn-full" style="border-radius:12px;padding:12px;font-size:14px" onclick="startTest()">Start Test →</button>
+      </div>
+    </div>
+    ${list.length>0?`
+    <div style="color:rgba(255,255,255,.4);font-size:10px;font-weight:800;letter-spacing:.1em;margin-bottom:12px">AVAILABLE TESTS</div>
+    ${list.map(t=>`<div class="pcard fade" style="padding:14px 16px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(6,214,160,.15);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">✏️</div>
+        <div style="flex:1">
+          <div style="color:#fff;font-size:13px;font-weight:800">${t.title}</div>
+          <div style="color:rgba(255,255,255,.35);font-size:11px;margin-top:2px">${t.subj} • ${t.qs?.length||0} Questions • ${t.dur} min</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="background:rgba(6,214,160,.15);color:var(--teal);border:1px solid rgba(6,214,160,.3);padding:3px 10px;border-radius:20px;font-size:10px;font-weight:800">● LIVE</span>
+        <span style="font-family:monospace;font-weight:800;color:var(--gold);font-size:13px;letter-spacing:3px">${t.code}</span>
+      </div>
+    </div>`).join('')}`:''}
+  </div>`;
+}
+
+// ============================================================
+// VIDEO PLAYER — Full In-App Player (YouTube / Drive / MP4 / DataURL)
+// ============================================================
+let _vpEl=null;
+
+/* Detect URL type */
+function _urlType(url){
+  if(!url) return 'unknown';
+  if(ytId(url)) return 'youtube';
+  if(/drive\.google\.com/.test(url)) return 'gdrive';
+  if(/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(url)) return 'mp4';
+  if(/^data:video/i.test(url)) return 'mp4';       // uploaded file (base64)
+  // Any other direct http/https — try as video
+  if(/^https?:\/\//i.test(url)) return 'mp4';
+  return 'unknown';
+}
+
+/* Convert Google Drive share link → embed/direct link */
+function _driveEmbed(url){
+  // https://drive.google.com/file/d/FILE_ID/view  →  preview embed
+  const m=url.match(/\/file\/d\/([^/]+)/);
+  if(m) return `https://drive.google.com/file/d/${m[1]}/preview`;
+  // Already an embed or other drive URL
+  return url;
+}
+
+/* Build the in-app video info bar */
+function _vpInfoBar(v){
+  return `<div style="padding:14px 14px 24px;background:#090d18">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <span class="badge" style="background:rgba(244,162,97,.18);color:#F4A261">${v.subj}</span>
+      ${v.chapter?`<span class="badge" style="background:rgba(6,214,160,.12);color:var(--teal);font-size:10px">📖 ${v.chapter}</span>`:''}
+    </div>
+    <div style="color:#fff;font-size:16px;font-weight:800;margin-bottom:5px">${v.title}</div>
+    ${v.desc?`<div style="color:rgba(255,255,255,.5);font-size:13px;line-height:1.7">${v.desc}</div>`:''}
+  </div>`;
+}
+
+/* Native HTML5 player markup */
+function _nativePlayerHTML(src, v){
+  return `
+  <div class="vp-wrap" id="vp-wrap" style="background:#000">
+    <video id="vp-vid" src="${src}" playsinline preload="metadata"
+      style="width:100%;display:block;max-height:56vw;background:#000"
+      webkit-playsinline x-webkit-airplay="allow"></video>
+    <div class="vp-controls" style="flex-wrap:wrap;gap:6px">
+      <button class="vp-play" id="vp-play" onclick="vpToggle()">▶</button>
+      <div class="vp-progress" id="vp-prog" onclick="vpSeek(event)" style="min-width:80px">
+        <div class="vp-bar" id="vp-bar"></div>
+      </div>
+      <div class="vp-time" id="vp-time">0:00 / 0:00</div>
+      <select class="vp-speed" onchange="vpSpeed(this.value)">
+        <option value="0.5">0.5×</option>
+        <option value="0.75">0.75×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.25">1.25×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2">2×</option>
+      </select>
+      <button class="vp-fs" onclick="vpFullscreen()" title="Fullscreen" style="font-size:18px;padding:5px 9px">⛶</button>
+    </div>
+  </div>
+  ${_vpInfoBar(v)}`;
+}
+
+/* YouTube — clean card with Play on YouTube button */
+function _ytPlayerHTML(ytid, v){
+  return `
+  <div style="position:relative;width:100%;flex-shrink:0">
+    <img src="https://img.youtube.com/vi/${ytid}/maxresdefault.jpg"
+      onerror="this.src='https://img.youtube.com/vi/${ytid}/mqdefault.jpg'"
+      style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#000"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1) 0%,rgba(0,0,0,.7) 100%);display:flex;align-items:center;justify-content:center">
+      <div style="width:70px;height:70px;border-radius:50%;background:rgba(232,72,85,.9);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(232,72,85,.5)">
+        <div style="color:#fff;font-size:28px;margin-left:4px">▶</div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:20px 16px 30px;background:#090d18">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+      <span class="badge" style="background:rgba(244,162,97,.18);color:#F4A261">${v.subj}</span>
+      ${v.chapter?`<span class="badge" style="background:rgba(6,214,160,.12);color:var(--teal);font-size:10px">📖 ${v.chapter}</span>`:''}
+      <span class="badge" style="background:rgba(255,0,0,.15);color:#ff4444;font-size:10px">▶ YouTube</span>
+    </div>
+    <div style="color:#fff;font-size:17px;font-weight:800;margin-bottom:6px;line-height:1.4">${v.title}</div>
+    ${v.desc?`<div style="color:rgba(255,255,255,.45);font-size:13px;line-height:1.7;margin-bottom:16px">${v.desc}</div>`:'<div style="margin-bottom:16px"></div>'}
+    <a href="https://www.youtube.com/watch?v=${ytid}" target="_blank"
+      style="display:flex;align-items:center;justify-content:center;gap:10px;background:#FF0000;color:#fff;text-decoration:none;padding:14px 20px;border-radius:12px;font-weight:800;font-size:15px;box-shadow:0 4px 20px rgba(255,0,0,.35)">
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none"><rect width="22" height="16" rx="4" fill="#fff"/><polygon points="9,4 17,8 9,12" fill="#FF0000"/></svg>
+      Play on YouTube
+    </a>
+    <div style="margin-top:10px;text-align:center;color:rgba(255,255,255,.25);font-size:11px">YouTube app ya browser mein open hoga</div>
+  </div>`;
+}
+
+/* Google Drive in-app embed player */
+function _drivePlayerHTML(url, v){
+  const embedUrl=_driveEmbed(url);
+  return `
+  <div style="width:100%;aspect-ratio:16/9;background:#000;position:relative;flex-shrink:0">
+    <iframe src="${embedUrl}"
+      style="width:100%;height:100%;border:none;display:block;position:absolute;top:0;left:0"
+      allow="autoplay; fullscreen"
+      allowfullscreen>
+    </iframe>
+  </div>
+  ${_vpInfoBar(v)}`;
+}
+
+function watchVideo(id){
+  const v=DB.videos.find(x=>x.id===id); if(!v) return;
+  const wb=document.getElementById('watch-body');
+  _vpEl=null;
+
+  const type=_urlType(v.url);
+  const ytid=ytId(v.url);
+
+  if(type==='youtube'){
+    wb.innerHTML=_ytPlayerHTML(ytid, v);
+    // No _vpEl needed for YouTube
+
+  } else if(type==='gdrive'){
+    wb.innerHTML=_drivePlayerHTML(v.url, v);
+
+  } else if(type==='mp4'){
+    wb.innerHTML=_nativePlayerHTML(v.url, v);
+    _vpEl=document.getElementById('vp-vid');
+    if(_vpEl){
+      _vpEl.addEventListener('timeupdate', vpTick);
+      _vpEl.addEventListener('ended', ()=>{ const b=document.getElementById('vp-play'); if(b) b.textContent='▶'; });
+      _vpEl.addEventListener('play',  ()=>{ const b=document.getElementById('vp-play'); if(b) b.textContent='⏸'; });
+      _vpEl.addEventListener('pause', ()=>{ const b=document.getElementById('vp-play'); if(b) b.textContent='▶'; });
+      _vpEl.addEventListener('error', ()=>{
+        // Video failed to load — show error inside app
+        const wrap=document.getElementById('vp-wrap');
+        if(wrap) wrap.innerHTML=`<div style="aspect-ratio:16/9;background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;text-align:center">
+          <div style="font-size:36px">⚠️</div>
+          <div style="color:#fff;font-weight:800">Video Load Failed</div>
+          <div style="color:rgba(255,255,255,.4);font-size:12px">File not accessible. Check the URL or re-upload the video.</div>
+        </div>`;
+      });
+      _vpEl.play().catch(()=>{});
+    }
+
+  } else {
+    // Unknown — try as video natively, worst case show error inside app
+    wb.innerHTML=_nativePlayerHTML(v.url, v);
+    _vpEl=document.getElementById('vp-vid');
+    if(_vpEl){
+      _vpEl.addEventListener('timeupdate', vpTick);
+      _vpEl.addEventListener('play',  ()=>{ const b=document.getElementById('vp-play'); if(b) b.textContent='⏸'; });
+      _vpEl.addEventListener('pause', ()=>{ const b=document.getElementById('vp-play'); if(b) b.textContent='▶'; });
+      _vpEl.play().catch(()=>{});
+    }
+  }
+
+  document.getElementById('watch-back').onclick=()=>{
+    if(_vpEl){ _vpEl.pause(); _vpEl.src=''; _vpEl=null; }
+    wb.innerHTML='';
+    go('classview');
+  };
+  go('watch');
+}
+
+/* Teacher preview — same in-app player, back goes to teacher dashboard */
+function watchVideoTeacher(id){
+  watchVideo(id);
+  // Override back button for teacher context
+  setTimeout(()=>{
+    document.getElementById('watch-back').onclick=()=>{
+      if(_vpEl){ _vpEl.pause(); _vpEl.src=''; _vpEl=null; }
+      document.getElementById('watch-body').innerHTML='';
+      go('teacher');
+    };
+  },50);
+}
+
+// ---- native player helpers ----
+function vpToggle(){
+  if(!_vpEl) return;
+  _vpEl.paused ? _vpEl.play() : _vpEl.pause();
+}
+function vpTick(){
+  if(!_vpEl) return;
+  const bar=document.getElementById('vp-bar');
+  const time=document.getElementById('vp-time');
+  if(!bar||!time) return;
+  const pct=_vpEl.duration?(_vpEl.currentTime/_vpEl.duration)*100:0;
+  bar.style.width=pct+'%';
+  time.textContent=fmtSec(_vpEl.currentTime)+' / '+fmtSec(_vpEl.duration||0);
+}
+function vpSeek(e){
+  if(!_vpEl||!_vpEl.duration) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  const pct=(e.clientX-r.left)/r.width;
+  _vpEl.currentTime=pct*_vpEl.duration;
+}
+function vpSpeed(v){ if(_vpEl) _vpEl.playbackRate=parseFloat(v); }
+function vpFullscreen(){
+  const wrap=document.getElementById('vp-wrap');
+  if(!wrap) return;
+  if(wrap.requestFullscreen) wrap.requestFullscreen();
+  else if(wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+}
+function fmtSec(s){
+  if(!s||isNaN(s)) return '0:00';
+  const m=Math.floor(s/60), sec=Math.floor(s%60);
+  return m+':'+(sec<10?'0':'')+sec;
+}
+
+// READ NOTES
+function openReadNotes(id, backTo){
+  const n=DB.notes.find(x=>x.id===id);if(!n) return;
+  document.getElementById('notes-title').textContent=n.title;
+  document.getElementById('notes-body').innerHTML=`
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <span class="badge" style="background:var(--tealL);color:var(--pri)">${n.cls}</span>
+      <span class="badge" style="background:var(--goldL);color:#92400E">${n.subj}</span>
+    </div>
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:18px">${n.title}</h2>
+    <div style="font-size:15px;line-height:1.95;white-space:pre-wrap;color:var(--txt)">${n.content}</div>`;
+  document.getElementById('notes-back').onclick=()=>go(backTo);
+  go('notes');
+}
+
+// ============================================================
+// TEST ENGINE
+// ============================================================
+function startTest(){
+  const code=document.getElementById('s-code')?.value?.trim().toUpperCase();
+  const name=document.getElementById('s-name')?.value?.trim();
+  if(!code) return alert('Please enter a test code');
+  if(!name) return alert('Please enter your name');
+  const t=DB.tests.find(x=>x.code===code&&x.active);
+  if(!t) return alert('Invalid code or test is not active.\nCheck the code and try again.');
+  studentName=name; currentTest=t;
+
+  // Google Form test — open in embedded iframe with timer
+  if(t.testType==='gform'){
+    document.getElementById('gform-title').textContent=t.title;
+    // Convert /viewform URL to embedded URL
+    let furl=t.gformUrl||'';
+    if(furl.includes('/viewform')) furl=furl.replace('/viewform','/viewform?embedded=true');
+    else if(!furl.includes('embedded=true')) furl+=(furl.includes('?')?'&':'?')+'embedded=true';
+    document.getElementById('gform-iframe').src=furl;
+    // Timer
+    timeLeft=t.dur*60; updateGFormTimer();
+    clearInterval(timerInt);
+    timerInt=setInterval(()=>{
+      timeLeft--; updateGFormTimer();
+      if(timeLeft<=0){ clearInterval(timerInt); alert('⏰ Time is up! Please submit the form if you have not already done so.'); }
+    },1000);
+    document.getElementById('gform-back').onclick=()=>{
+      if(confirm('Are you sure you want to leave the test?')){ clearInterval(timerInt); document.getElementById('gform-iframe').src=''; go('classview'); }
+    };
+    go('gform'); return;
+  }
+
+  // MCQ test
+  testAnswers={};qIdx=0;
+  timeLeft=t.dur*60;
+  document.getElementById('test-title').textContent=t.title;
+  updateTimer();
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    timeLeft--;updateTimer();
+    if(timeLeft<=0){clearInterval(timerInt);submitTest(true);}
+  },1000);
+  renderQ();
+  go('test');
+}
+
+function updateGFormTimer(){
+  const el=document.getElementById('gform-timer');if(!el) return;
+  const pct=currentTest?Math.round((timeLeft/(currentTest.dur*60))*100):100;
+  el.textContent=fmtTime(timeLeft);
+  el.className='timer'+(pct<20?' d':pct<40?' w':'');
+}
+
+function updateTimer(){
+  const el=document.getElementById('test-timer');if(!el) return;
+  const pct=currentTest?Math.round((timeLeft/(currentTest.dur*60))*100):100;
+  el.textContent=fmtTime(timeLeft);
+  el.className='timer'+(pct<20?' d':pct<40?' w':'');
+}
+
+function renderQ(){
+  if(!currentTest) return;
+  const qs=currentTest.qs||[];
+  const q=qs[qIdx];if(!q) return;
+  const answered=Object.keys(testAnswers).length;
+  document.getElementById('test-body').innerHTML=`
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px">Q ${qIdx+1} / ${qs.length} &nbsp;•&nbsp; ${answered} answered</div>
+      <div class="qpal">
+        ${qs.map((_,i)=>`<div class="qd${testAnswers[i]!==undefined?' ans':''}${i===qIdx?' cur':''}" onclick="qIdx=${i};renderQ()">${i+1}</div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;line-height:1.6;margin-bottom:${q.img?'12px':'16px'}">${q.q}</div>
+      ${q.img?`<img src="${q.img}" style="width:100%;border-radius:8px;margin-bottom:14px;max-height:200px;object-fit:contain"/>`:''}
+      ${q.a.map((opt,j)=>`<div class="opt${testAnswers[qIdx]===j?' sel':''}" onclick="testAnswers[${qIdx}]=${j};renderQ()">
+        <span style="font-weight:800;margin-right:8px;color:var(--muted)">${['A','B','C','D'][j]}.</span>${opt}
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:10px;justify-content:space-between">
+      <button class="btn btn-out btn-sm" onclick="qIdx=Math.max(0,qIdx-1);renderQ()" ${qIdx===0?'disabled':''}>← Prev</button>
+      ${qIdx<qs.length-1?`<button class="btn btn-pri btn-sm" onclick="qIdx++;renderQ()">Next →</button>`:
+      `<button class="btn btn-acc btn-sm" onclick="submitTest(false)">Submit Test</button>`}
+    </div>`;
+}
+
+function submitTest(auto){
+  if(!auto&&!confirm('Are you sure you want to submit the test?')) return;
+  clearInterval(timerInt);
+  const qs=currentTest?.qs||[];
+  const negVal = currentTest.negMarking==='custom' ? parseFloat(currentTest.negCustom||0.25)
+                : currentTest.negMarking==='0'||!currentTest.negMarking ? 0
+                : parseFloat(currentTest.negMarking);
+  const defaultMarks = currentTest.marksPerQ||1;
+  let correct=0, wrong=0, skipped=0, earnedMarks=0, lostMarks=0;
+  qs.forEach((q,i)=>{
+    const qMarks = q.marks||defaultMarks;
+    if(testAnswers[i]===undefined){ skipped++; }
+    else if(testAnswers[i]===q.correct){ correct++; earnedMarks+=qMarks; }
+    else{ wrong++; lostMarks+=negVal; }
+  });
+  const totalMaxMarks = qs.reduce((s,q)=>s+(q.marks||defaultMarks),0);
+  const rawScore = earnedMarks - lostMarks;
+  const score = Math.max(0, Math.round(rawScore * 100) / 100);
+  const pct = totalMaxMarks>0 ? Math.round((score / totalMaxMarks) * 100) : 0;
+  const r={id:uid(),testId:currentTest.id,testTitle:currentTest.title,cls:currentTest.cls,studentName,
+    score,rawScore,earnedMarks,correct,wrong,skipped,negVal,total:qs.length,totalMaxMarks,pct,
+    answers:{...testAnswers},submittedAt:new Date().toISOString()};
+  DB.results.push(r);saveDB();
+  renderResult(r,qs,defaultMarks);go('result');
+}
+
+function renderResult(r,qs,defaultMarks){
+  const pass=r.pct>=40;
+  const hasNeg=r.negVal>0;
+  const dm=defaultMarks||r.totalMaxMarks/r.total||1;
+  document.getElementById('result-body').innerHTML=`
+    <div class="card" style="background:${pass?'var(--pri)':'#1a0808'};text-align:center;padding:28px 18px;margin-bottom:14px">
+      <div style="font-size:50px;margin-bottom:8px">${pass?'🎉':'📚'}</div>
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:3px">${pass?'Excellent!':'Keep Studying!'}</div>
+      <div style="color:rgba(255,255,255,.5);font-size:12px;margin-bottom:20px">${r.studentName} — ${r.testTitle}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:${hasNeg?'10px':'20px'}">
+        <div style="background:rgba(255,255,255,.1);border-radius:9px;padding:10px">
+          <div style="font-size:20px;font-weight:800;color:#F4A261">${r.score}/${r.totalMaxMarks||r.total}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">Marks</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:9px;padding:10px">
+          <div style="font-size:20px;font-weight:800;color:${pass?'var(--teal)':'var(--acc)'}">${r.pct}%</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">Percentage</div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:9px;padding:10px">
+          <div style="font-size:16px;font-weight:800;color:${pass?'var(--teal)':'var(--acc)'}">${pass?'PASS':'FAIL'}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">Result</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr ${hasNeg?'1fr':''};gap:6px;margin-bottom:20px">
+        <div style="background:rgba(16,185,129,.15);border-radius:8px;padding:8px">
+          <div style="font-size:17px;font-weight:800;color:var(--teal)">${r.correct}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">Correct</div>
+        </div>
+        <div style="background:rgba(239,68,68,.15);border-radius:8px;padding:8px">
+          <div style="font-size:17px;font-weight:800;color:var(--acc)">${r.wrong}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">Wrong</div>
+        </div>
+        <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:8px">
+          <div style="font-size:17px;font-weight:800;color:rgba(255,255,255,.5)">${r.skipped}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">Skipped</div>
+        </div>
+        ${hasNeg?`<div style="background:rgba(239,68,68,.12);border-radius:8px;padding:8px">
+          <div style="font-size:17px;font-weight:800;color:var(--acc)">-${(r.negVal*r.wrong).toFixed(2)}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4)">Neg. Marks</div>
+        </div>`:''}
+      </div>
+      <button class="btn btn-acc" onclick="go('classview')">Back to ${r.cls}</button>
+    </div>
+    <div style="font-size:14px;font-weight:800;margin-bottom:10px">Answer Review</div>
+    ${qs.map((q,i)=>{
+      const ok=r.answers[i]===q.correct;
+      const skp=r.answers[i]===undefined;
+      const qM=q.marks||dm;
+      return `<div class="card fade" style="margin-bottom:8px;padding:13px 15px">
+        <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;flex:1;line-height:1.5">${i+1}. ${q.q}</div>
+          <span class="badge" style="background:${ok?'var(--okL)':skp?'var(--warnL)':'var(--errL)'};color:${ok?'var(--ok)':skp?'var(--warn)':'var(--err)'};flex-shrink:0">${ok?`+${qM}`:skp?'—':`-${r.negVal||0}`}</span>
+        </div>
+        ${q.img?`<img src="${q.img}" style="width:100%;border-radius:6px;margin-bottom:8px;max-height:120px;object-fit:contain"/>`:''}
+        <div style="font-size:12px;color:var(--muted)">
+          ${!ok&&!skp&&r.answers[i]!==undefined?`<span style="color:var(--err)">Your: ${q.a[r.answers[i]]}&nbsp;&nbsp;</span>`:''}
+          ${skp?`<span style="color:var(--warn)">Skipped&nbsp;&nbsp;</span>`:''}
+          <span style="color:var(--ok)">✓ ${q.a[q.correct]}</span>
+          <span style="color:var(--muted);margin-left:8px">[${qM} mark${qM>1?'s':''}]</span>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(title,body,noClose=false){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+
+// ============================================================
+// PWA INSTALL
+// ============================================================
+let dPr=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dPr=e;});
+
+// Service Worker (offline cache)
+if('serviceWorker' in navigator){
+  const sw=`const C='nuc-v2';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(location.href))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)).catch(()=>caches.match(location.href))));`;
+  const b=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{});
+}
+
+// PWA Manifest
+const mf={name:'Nucleon — Smart Learning',short_name:'Nucleon',start_url:'./',display:'standalone',background_color:'#0A2463',theme_color:'#0A2463',
+  icons:[{src:`data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><circle cx="96" cy="96" r="96" fill="#0A2463"/><ellipse cx="96" cy="96" rx="76" ry="31" stroke="white" stroke-width="8" fill="none"/><ellipse cx="96" cy="96" rx="76" ry="31" stroke="white" stroke-width="8" fill="none" transform="rotate(60 96 96)"/><ellipse cx="96" cy="96" rx="76" ry="31" stroke="white" stroke-width="8" fill="none" transform="rotate(-60 96 96)"/><circle cx="96" cy="96" r="20" fill="#E84855"/></svg>')}`,sizes:'192x192',type:'image/svg+xml'}]};
+const ml=document.createElement('link');
+ml.rel='manifest';
+ml.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/json'}));
+document.head.appendChild(ml);
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load',()=>{
+  loadDB();
+  updateLandingStats();
+  setTimeout(()=>{
+    const l=document.getElementById('loader');
+    l.classList.add('hide');
+    setTimeout(()=>l.remove(),500);
+  },1000);
+});
+</script>
+</body>
+</html>
